@@ -8,10 +8,10 @@ import TodaySpecial from "../components/Home/TodaySpecial";
 function Home(){
     
     return(
-        <section className="bg-zinc-800 h-[calc(100vh-6.5rem)] overflow-hidden flex gap-2">
+        <section className="bg-zinc-800 h-[calc(100vh-6.5rem)] overflow-hidden flex">
             
             {/*Left Container*/}
-            <div className="flex-3 bg-zinc-800 ml-3 h-full">
+            <div className="flex-3 bg-zinc-800 h-full ml-1">
                 <Greeting/>
                 
                 <div className="flex flex-row w-full gap-3">
@@ -34,7 +34,7 @@ function Home(){
             </div>
 
             {/*Right Container*/}
-            <div className="m-3 rounded-2xl flex-2 bg-zinc-900 h-150">
+            <div className="my-4 mr-4 ml-1 rounded-2xl flex-2 bg-zinc-900 h-149">
                 <TodaySpecial/>
             </div>
         </section>

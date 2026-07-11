@@ -67,8 +67,8 @@ function TodaySpecial() {
                             <span
                                 className={`text-sm px-3 py-1 rounded-full ${
                                     dish.available
-                                        ? "bg-green-500/20 text-green-400"
-                                        : "bg-red-500/20 text-red-400"
+                                        ? "bg-green-700/20 text-green-400"
+                                        : "bg-red-700/20 text-red-400"
                                 }`}>
                                 {dish.available ? "Available" : "Sold Out"}
                             </span>

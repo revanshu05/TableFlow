@@ -24,6 +24,9 @@ function RecentOrders(){
                     <OrdersList/>
                     <OrdersList/>
                     <OrdersList/>
+                    <OrdersList/>
+                    <OrdersList/>
+                    <OrdersList/>
                 </div>
             </div>
         </div>
