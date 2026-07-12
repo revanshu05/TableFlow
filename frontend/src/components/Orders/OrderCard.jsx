@@ -1,6 +1,7 @@
 import { FaCheckCircle } from "react-icons/fa";
 import { LuChefHat } from "react-icons/lu";
 import { BsCheck2All } from "react-icons/bs";
+import { getAvatarColor } from "../../utils/getAvatarColor";
 
 const statusConfig = {
     "In Progress": {
@@ -36,7 +37,7 @@ function OrderCard({
             <div className="flex justify-between items-start">
                 <div className="flex gap-3">
 
-                    <div className="w-12 h-12 rounded-lg bg-olive-700 text-zinc-200 font-bold flex items-center justify-center">
+                    <div className={`w-12 h-12 rounded-lg font-bold flex items-center justify-center ${getAvatarColor(customer)}`}>
                         {customer
                             .split(" ")
                             .map((word) => word[0])

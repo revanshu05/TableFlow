@@ -1,3 +1,5 @@
+import { getAvatarColor } from "../../utils/getAvatarColor";
+
 function TableCard({
     tableNo,
     seats,
@@ -33,8 +35,8 @@ function TableCard({
             </div>
 
             <div className="flex justify-center my-2">
-                <div className="w-16 h-16 rounded-full bg-zinc-800 flex items-center 
-                    justify-center text-zinc-200 text-xl font-semibold">
+                <div className={`w-16 h-16 rounded-full flex items-center 
+                    justify-center text-xl font-bold ${getAvatarColor(customer)}`}>
                     {customer}
                 </div>
             </div>
