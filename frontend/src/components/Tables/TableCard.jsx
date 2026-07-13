@@ -1,4 +1,6 @@
+import { IoMdReturnLeft } from "react-icons/io";
 import { getAvatarColor } from "../../utils/getAvatarColor";
+import { useNavigate } from "react-router-dom";
 
 function TableCard({
     tableNo,
@@ -6,6 +8,13 @@ function TableCard({
     status,
     customer,
 }) {
+
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+        if(status === "Occupied") return;
+        navigate("/menu");
+    }
 
     const statusConfig = {
         "Available": {
@@ -22,7 +31,8 @@ function TableCard({
 
     return (
         <div className="w-full bg-zinc-900 rounded-lg p-4 border border-zinc-900 hover:border-olive-500 
-            transition-all duration-200">
+            transition-all duration-200"
+            onClick={handleClick}>
             
             <div className="flex justify-between items-center">
                 <h2 className="text-white text-xl font-semibold">

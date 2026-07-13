@@ -1,12 +1,16 @@
 import logo from "../../images/Dark_Logo.png"
 import { IoSearch } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 function Header(){
+    const navigate = useNavigate();
+
     return(
         <div className="flex justify-between items-center bg-zinc-900 text-xl text-zinc-300 px-5 py-3">
             
-            <img src={logo} alt="Logo" className="h-8"/>
+            <img src={logo} alt="Logo" className="h-8"
+                onClick={() => navigate("/")}/>
             
             {/* Search bar */}
             <div className="flex items-center bg-zinc-800 px-3 py-1 rounded-full w-0 md:w-1/3">
