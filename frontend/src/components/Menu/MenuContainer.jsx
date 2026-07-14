@@ -7,19 +7,21 @@ import { FaShoppingCart } from "react-icons/fa";
 function MenuContainer() {
     const menuList = Object.values(menus);
 
-    let [count, setCount] = useState(0);
-
-    const increment = () => {
-        if(count >= 6) return;
-        setCount((prev) => prev + 1);
-    }
-
-    const decrement = () => {
-        if(count <= 0) return;
-        setCount((prev) => prev - 1);
-    }
-
     const [selectedMenu, setSelectedMenu] = useState(menuList[0]);
+    const [itemCount, setItemCount] = useState(0);
+    const [itemId, setItemId] = useState();
+    
+    const increment = (id) => {
+        setItemId(id);
+        if(itemCount >= 5) return;
+        setItemCount((prev) => prev + 1);
+    }
+
+    const decrement = (id) => {
+        setItemId(id);
+        if(itemCount <= 0) return;
+        setItemCount((prev) => prev - 1);
+    }
 
     return (
         <div className="h-[85%] flex flex-col m-4">
@@ -31,7 +33,11 @@ function MenuContainer() {
                     return (
                         <div
                             key={menu.id}
-                            onClick={() => setSelectedMenu(menu)}
+                            onClick={() => {
+                                setSelectedMenu(menu)
+                                setItemId(0)
+                                setItemCount(0)
+                            }}
                             className={`relative h-22 overflow-hidden rounded-xl cursor-pointer transition-all duration-300 bg-zinc-900 border border-zinc-800
                             ${
                                 active
@@ -57,8 +63,7 @@ function MenuContainer() {
                             <div
                                 className="absolute top-0 right-0 h-full w-[45%]"
                                 style={{
-                                    clipPath:
-                                        "polygon(30% 0%,100% 0%,100% 100%,0% 100%)",
+                                    clipPath:"polygon(30% 0%,100% 0%,100% 100%,0% 100%)",
                                 }}
                             >
                                 <img
@@ -90,11 +95,13 @@ function MenuContainer() {
                                 }`}
                             ></div>
 
-                            <div>
+                            <div className="w-60">
                                 <h2 className="text-lg font-semibold text-zinc-100">
                                     {item.name}
                                 </h2>
+                            </div>
 
+                            <div>
                                 <p className="text-orange-400 font-semibold">
                                     ₹{item.price}
                                 </p>
@@ -108,21 +115,22 @@ function MenuContainer() {
                             <div className="w-30">
                                 <div className="flex items-center justify-between rounded-lg py-2 px-4 bg-zinc-800">
                                     <button className="text-amber-300 hover:text-amber-500 duration-200"
-                                        onClick={decrement}>
+                                        onClick={() => decrement(item.id)}>
                                         <FaMinus  size={18}/>
                                     </button>
 
-                                    <span className="text-lg text-zinc-300 font-semibold px-3">{count}</span>
+                                    <span className="text-lg text-zinc-300 font-semibold px-3">{item.id === itemId ? itemCount : "0"}</span>
 
                                     <button className="text-amber-300 hover:text-amber-500 duration-200"
-                                        onClick={increment}>
+                                        onClick={() => increment(item.id)}>
                                         <FaPlus  size={18}/>
                                     </button>
                                 </div>
                             </div>
 
                             {/* Add to cart */}
-                            <button className="ml-5 h-10 w-10 rounded-lg bg-green-600 hover:bg-green-500 transition">
+                            <button className="ml-5 h-10 w-10 rounded-lg bg-green-600 hover:bg-green-500 transition"
+                                onClick={() => setItemCount(0)}>
                                 <FaShoppingCart className="m-auto text-zinc-200" size={22}/>
                             </button>
 
