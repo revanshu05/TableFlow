@@ -1,9 +1,11 @@
+import { useSelector } from "react-redux";
 import BillContainer from "../components/Menu/BillContainer";
 import MenuContainer from "../components/Menu/MenuContainer";
 import BackButton from "../components/shared/BackButton";
 import { FaLinesLeaning } from "react-icons/fa6";
 
 function Menu(){
+    const customerData = useSelector(state => state.customer);
     return (
         <section className="bg-zinc-800 h-[calc(100vh-6.5rem)] overflow-hidden flex">
             
@@ -19,9 +21,13 @@ function Menu(){
                     <div className="flex items-center gap-2">
                         <FaLinesLeaning size={40}
                             className="text-orange-300 mt-2"/>
-                        <div>
-                            <h1 className="text-zinc-200 text-lg font-semibold">Customer Name</h1>
-                            <p className="text-zinc-400 text-sm font-normal">Table No: 01</p>
+                        
+                        <div className="text-right">
+                            <h1 className="text-zinc-200 text-lg font-semibold">{customerData.customerName || "Customer Name"}</h1>    
+                            { customerData.orderType === "dine-in" ? 
+                                (<p className="text-zinc-400 text-sm font-normal">Table No : {customerData.tableNo || "N/A"}</p>) : 
+                                (<p className="text-zinc-400 text-sm font-normal">take-away</p>)
+                            }
                         </div>
                     </div>
                 </div>

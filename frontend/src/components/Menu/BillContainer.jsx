@@ -1,37 +1,18 @@
 import { useState } from "react";
 import OrderItem from "./OrderItem";
+import { formatDate, getAvatarColor, getAvatarName } from "../../utils";
+import { useSelector } from "react-redux";
 
 function BillContainer() {
+    
+    const customerData = useSelector((state) => state.customer);
+    const order = useSelector((state) => state.cart.items);
 
     const [payment, setPayment] = useState("cash");
 
-    const order = [
-        {
-            id: 1,
-            name: "Chicken Tikka",
-            quantity: 2,
-            price: 123,
-        },
-        {
-            id: 2,
-            name: "Butter Chicken",
-            quantity: 1,
-            price: 340,
-        },
-        {
-            id: 3,
-            name: "Paneer Tikka",
-            quantity: 3,
-            price: 250,
-        },
-    ];
-
     const items = order.reduce((sum, item) => sum + item.quantity, 0);
 
-    const subtotal = order.reduce(
-        (sum, item) => sum + item.price * item.quantity,
-        0
-    );
+    const subtotal = order.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const tax = Math.round(subtotal * 0.0525);
 
@@ -45,14 +26,12 @@ function BillContainer() {
             <div className="flex justify-between items-center pb-4 border-b border-zinc-700">
 
                 <div>
-                    <h2 className="text-zinc-100 text-md font-semibold">Customer Name</h2>
-
-                    <p className="text-zinc-400 text-sm mt-1">#01 / Dine In </p>
-
-                    <p className="text-zinc-500 text-xs mt-1">January 19, 2025 05:34 PM</p>
+                    <h2 className="text-zinc-100 text-md font-semibold">{customerData.customerName || "Customer Name"}</h2>
+                    <p className="text-zinc-400 text-sm font-medium mt-0.5">{customerData.orderId || "N/A"} / <span>{customerData.orderType}</span> </p>
+                    <p className="text-zinc-500 text-xs font font-medium mt-0.5">{formatDate(new Date())}</p>
                 </div>
 
-                <div className="h-14 w-14 rounded-xl bg-amber-400 flex items-center justify-center font-bold text-2xl">CN</div>
+                <div className={`h-14 w-14 rounded-xl flex items-center justify-center font-bold text-2xl ${getAvatarColor(customerData.customerName || "Customer Name")}`}>{getAvatarName(customerData.customerName || "Customer Name")}</div>
 
             </div>
 
@@ -64,11 +43,14 @@ function BillContainer() {
 
             <div className="flex-1 overflow-y-auto space-y-3 mt-2 pr-1">
 
-                {order.map((item) => (
+                {order.lenght === 0 ? (
+                    <div className="flex h-full items-center justify-center text-zinc-500">
+                        No items added</div>
+                ) : ( order.map((item) => (
                     <OrderItem
                         key={item.id}
                         item={item}
-                    />
+                    />)
                 ))}
 
             </div>
@@ -94,7 +76,7 @@ function BillContainer() {
 
                 {/* Payment */}
 
-                <div className="grid grid-cols-2 gap-3 mt-3">
+                {/* <div className="grid grid-cols-2 gap-3 mt-3">
 
                     <button
                         onClick={() => setPayment("cash")}
@@ -118,14 +100,14 @@ function BillContainer() {
                         Online
                     </button>
 
-                </div>
+                </div> */}
 
                 {/* Buttons */}
 
-                <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="flex mt-3">
 
-                    <button className="bg-blue-600 hover:bg-blue-500 rounded-md py-1.5 text-white font-semibold transition">Print Receipt</button>
-                    <button className="bg-amber-400 hover:bg-amber-300 rounded-md py-1.5 text-zinc-900 font-bold transition">Place Order</button>
+                    {/*<button className="bg-blue-600 hover:bg-blue-500 rounded-md py-1.5 text-white font-semibold transition">Print Receipt</button> */}
+                    <button className="mx-auto px-10 bg-amber-400 hover:bg-amber-300 rounded-md py-1.5 text-zinc-900 font-bold transition">Place Order</button>
 
                 </div>
 

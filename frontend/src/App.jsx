@@ -1,5 +1,5 @@
 import {BrowserRouter, Routes, Route, Link} from "react-router-dom"
-import {Home, Auth, Orders, Tables, Menu} from "./pages"
+import {Home, Auth, Orders, Tables, Menu, More} from "./pages"
 import Header from "./components/shared/Header"
 import Footer from "./components/shared/Footer"
 
@@ -15,6 +15,7 @@ function App() {
           <Route path="/orders" element={<Orders/>} />
           <Route path="/tables" element={<Tables/>} />
           <Route path="/menu" element={<Menu/>} />
+          <Route path="/more" element={<More/>} />
         </Routes>
         <Footer/>
       </BrowserRouter>

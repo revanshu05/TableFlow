@@ -1,11 +1,15 @@
 import { FaTrashAlt } from "react-icons/fa";
-import { FaCirclePlus } from "react-icons/fa6";
+import { useDispatch } from "react-redux";
+import { removeItem } from "../../redux/slices/cartSlice";
 
 function OrderItem({ item }) {
+    const dispatch = useDispatch();
+    
     return (
         <div className="bg-zinc-800 rounded-md py-2 px-3 flex justify-between items-start">
             <div className="flex gap-3 mt-1 text-zinc-400">
-                <button className="hover:text-red-400 transition">
+                <button className="hover:text-red-400 transition"
+                    onClick={() => dispatch(removeItem(item.id))}>
                     <FaTrashAlt size={18} />
                 </button>
             </div>

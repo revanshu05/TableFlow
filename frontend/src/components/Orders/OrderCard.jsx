@@ -1,7 +1,7 @@
 import { FaCheckCircle } from "react-icons/fa";
 import { LuChefHat } from "react-icons/lu";
 import { BsCheck2All } from "react-icons/bs";
-import { getAvatarColor } from "../../utils/getAvatarColor";
+import { getAvatarColor } from "../../utils";
 
 const statusConfig = {
     "In Progress": {

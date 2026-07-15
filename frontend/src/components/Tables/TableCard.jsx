@@ -1,6 +1,8 @@
 import { IoMdReturnLeft } from "react-icons/io";
-import { getAvatarColor } from "../../utils/getAvatarColor";
+import { getAvatarColor } from "../../utils";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { updateTable } from "../../redux/slices/customerSlice";
 
 function TableCard({
     tableNo,
@@ -10,8 +12,10 @@ function TableCard({
 }) {
 
     const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-    const handleClick = () => {
+    const handleClick = (tableNo) => {
+        dispatch(updateTable({tableNo}))
         if(status === "Occupied") return;
         navigate("/menu");
     }
@@ -32,7 +36,7 @@ function TableCard({
     return (
         <div className="w-full bg-zinc-900 rounded-lg p-4 border border-zinc-900 hover:border-olive-500 
             transition-all duration-200"
-            onClick={handleClick}>
+            onClick={() => handleClick(tableNo)}>
             
             <div className="flex justify-between items-center">
                 <h2 className="text-white text-xl font-semibold">

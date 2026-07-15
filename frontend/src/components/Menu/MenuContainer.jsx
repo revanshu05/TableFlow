@@ -3,60 +3,69 @@ import menus from "../../constants";
 import { FaPlus } from "react-icons/fa6";
 import { FaMinus } from "react-icons/fa6";
 import { FaShoppingCart } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { addItem } from "../../redux/slices/cartSlice";
 
 function MenuContainer() {
     const menuList = Object.values(menus);
 
+    const dispatch = useDispatch();
+
     const [selectedMenu, setSelectedMenu] = useState(menuList[0]);
-    const [itemCount, setItemCount] = useState(0);
-    const [itemId, setItemId] = useState();
+    const [selectedItems, setSelectedItems] = useState({});
     
     const increment = (id) => {
-        setItemId(id);
-        if(itemCount >= 5) return;
-        setItemCount((prev) => prev + 1);
-    }
+        setSelectedItems((prev) => ({
+            ...prev,
+            [id]: (prev[id] || 0) + 1,
+        }));
+    };
 
     const decrement = (id) => {
-        setItemId(id);
-        if(itemCount <= 0) return;
-        setItemCount((prev) => prev - 1);
+        setSelectedItems((prev) => ({
+            ...prev,
+            [id]: Math.max((prev[id] || 0) - 1, 0),
+        }));
+    };
+
+    const addToCart = (item) => {
+        const quantity = selectedItems[item.id] || 0;
+
+        if (quantity === 0) return;
+
+        dispatch(
+            addItem({...item, quantity,})
+        );
+
+        setSelectedItems(
+            (prev) => ({...prev, [item.id]: 0,})
+        );
     }
 
     return (
-        <div className="h-[85%] flex flex-col m-4">
+        <div className="h-[85%] flex flex-col m-4 pt-2">
             {/* Menu Categories */}
-            <div className="grid grid-cols-4 gap-3">
+            <div className="grid grid-cols-4 gap-5">
                 {menuList.map((menu) => {
                     const active = selectedMenu.id === menu.id;
 
                     return (
                         <div
                             key={menu.id}
-                            onClick={() => {
-                                setSelectedMenu(menu)
-                                setItemId(0)
-                                setItemCount(0)
-                            }}
+                            onClick={() => setSelectedMenu(menu)}
                             className={`relative h-22 overflow-hidden rounded-xl cursor-pointer transition-all duration-300 bg-zinc-900 border border-zinc-800
                             ${
                                 active
                                     ? "border-orange-400 shadow-[0_0_15px_rgba(251,146,60,.8)]"
-                                    : "hover:scale-[1.02] hover:border-zinc-700"
+                                    : "hover:scale-[1.02]"
                             }`}
                         >
                             {/* Left Content */}
                             <div className="relative z-10 flex flex-col justify-between h-full p-4 w-[65%]">
                                 <div>
-                                    <h2 className="text-white text-lg font-semibold">
-                                        {menu.name}
-                                    </h2>
-
-                                    <p className="text-sm text-zinc-400 mt-1">
-                                        {menu.items.length} Items
-                                    </p>
+                                    <h2 className={`${active ? "text-orange-400" : "text-white"} text-lg font-semibold`}>{menu.name}</h2>
+                                    <p className="text-sm text-zinc-400 mt-1">{menu.items.length} Items </p>
                                 </div>
-
                             </div>
 
                             {/* Right Image */}
@@ -91,8 +100,7 @@ function MenuContainer() {
                         <div className="flex items-center gap-4">
                             <div
                                 className={`w-3 h-3 rounded-full ${
-                                    item.isVeg ? "bg-green-500" : "bg-red-500"
-                                }`}
+                                    item.isVeg ? "bg-green-500" : "bg-red-500"}`}
                             ></div>
 
                             <div className="w-60">
@@ -119,7 +127,7 @@ function MenuContainer() {
                                         <FaMinus  size={18}/>
                                     </button>
 
-                                    <span className="text-lg text-zinc-300 font-semibold px-3">{item.id === itemId ? itemCount : "0"}</span>
+                                    <span className="text-lg text-zinc-300 font-semibold px-3">{selectedItems[item.id] || "0"}</span>
 
                                     <button className="text-amber-300 hover:text-amber-500 duration-200"
                                         onClick={() => increment(item.id)}>
@@ -130,7 +138,7 @@ function MenuContainer() {
 
                             {/* Add to cart */}
                             <button className="ml-5 h-10 w-10 rounded-lg bg-green-600 hover:bg-green-500 transition"
-                                onClick={() => setItemCount(0)}>
+                                onClick={() => addToCart(item)}>
                                 <FaShoppingCart className="m-auto text-zinc-200" size={22}/>
                             </button>
 

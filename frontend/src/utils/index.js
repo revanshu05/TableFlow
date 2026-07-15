@@ -27,3 +27,17 @@ export function getAvatarColor(name) {
     return avatarColors[hash % avatarColors.length];
 
 }
+
+export function getAvatarName(name){
+    if(!name) return;
+
+    return name.split(" ").map(word => word[0]).join("").toUpperCase();
+}
+
+export function formatDate(date) {
+  return new Date(date).toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
