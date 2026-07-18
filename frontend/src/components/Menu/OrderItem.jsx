@@ -13,16 +13,18 @@ function OrderItem({ item }) {
                     <FaTrashAlt size={18} />
                 </button>
             </div>
-            
-            <div className="text-left w-45">
-                <h2 className="text-zinc-200 font-semibold">
-                    {item.name}
-                </h2>
-            </div>
 
-            <div className="flex gap-2 w-18">
-                <p className="text-zinc-400 font-semibold text-sm mt-0.5 border-r pr-2">×{item.quantity}</p>
-                <p className="text-zinc-100 font-bold text-md">₹{item.price * item.quantity}</p>
+            <div className="flex w-full justify-between ml-4">    
+                <div className="text-left">
+                    <h2 className="text-zinc-200 font-semibold">
+                        {item.name}
+                    </h2>
+                </div>
+
+                <div className="flex gap-2">
+                    <p className="text-zinc-400 font-semibold text-sm mt-0.5 border-r pr-2">×{item.quantity}</p>
+                    <p className="text-zinc-100 font-bold text-md">₹{item.price * item.quantity}</p>
+                </div>
             </div>
         </div>
     );
