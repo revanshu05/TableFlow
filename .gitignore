@@ -1,6 +1,7 @@
 # Root dependencies
 node_modules/
 plan.txt
+prompt.txt
 
 # Frontend
 frontend/node_modules/
