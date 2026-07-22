@@ -2,6 +2,8 @@ import User from "../models/user.model.js";
 import ApiError from "../utils/apiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiResponse from "../utils/apiResponse.js";
+import cookieParser from "cookie-parser";
+import jwt from "jsonwebtoken";
 
 const cookieOptions = {
     httpOnly: true,
@@ -81,4 +83,56 @@ const logoutUser = asyncHandler(async (req, res) => {
 });
 
 
-export {loginUser, logoutUser};
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    
+    const oldRefreshToken = req.cookies?.refreshToken;
+
+    if(!oldRefreshToken){
+        throw new ApiError(401, "Unauthorized Request");
+    }
+
+    let decodedToken;
+    
+    try {
+        decodedToken = jwt.verify(
+            oldRefreshToken, 
+            process.env.REFRESH_TOKEN_SECRET
+        );
+
+    } catch (error) {
+        console.error(error);
+        throw new ApiError(401, "invalid or expired refresh token");
+    }
+
+    const user = await User.findById(decodedToken._id)
+        .select("-password");
+
+    if(!user){
+        throw new ApiError(401, "invalid refresh token");
+    }
+
+    if(oldRefreshToken !== user.refreshToken){
+        throw new ApiError(401, "invalid refresh token");
+    }
+
+    console.log(req.cookies);
+
+    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id);
+
+    return res
+        .status(200)
+        .cookie("accessToken", accessToken, cookieOptions)
+        .cookie("refreshToken", refreshToken, cookieOptions)
+        .json(
+            new ApiResponse(
+                200,
+                {
+                    accessToken,
+                    refreshToken
+                },
+                "Access token refreshed successfully"
+            )
+        );
+});
+
+export {loginUser, logoutUser, refreshAccessToken};
