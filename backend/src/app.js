@@ -5,6 +5,7 @@ import userRouter from "./routes/user.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import authRouter from "./routes/auth.routes.js";
 import tableRouter from "./routes/table.routes.js";
+import menuRouter from "./routes/menu.routes.js";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.use(cookieParser());
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tables", tableRouter);
+app.use("/api/v1/menu", menuRouter);
 
 app.use(errorHandler);
 
