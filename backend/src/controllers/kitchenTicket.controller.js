@@ -11,7 +11,7 @@ import Order from "../models/order.model.js";
 import restaurantSettings from "../models/restaurantSettings.model.js";
 
 
-const createTicket = asyncHandler(async (req, res) => {
+const createKitchenTicket = asyncHandler(async (req, res) => {
     const { orderId } = req.params;
     const { items } = req.body;
 
@@ -174,9 +174,108 @@ const createTicket = asyncHandler(async (req, res) => {
     } finally {
         await session.endSession();
     }
-
-
 });
 
 
-export { createTicket };
+const getKitchenTickets = asyncHandler(async (req, res) => {
+    
+    const tickets = await KitchenTicket.find({
+        status:{
+            $in: ["PENDING", "PREPARING", "READY"]
+        }
+    })
+        .select("ticketNumber table items status createdAt")
+        .populate("table", "tableNo")
+        .sort({ createdAt: 1 })
+        .lean();
+
+    const groupedTickets = {
+        pending: [],
+        preparing: [],
+        ready: [],
+    };
+
+    for(const ticket of tickets){
+        if(ticket.status === "PENDING"){
+            groupedTickets.pending.push(ticket);
+        }
+        else if(ticket.status === "PREPARING"){
+            groupedTickets.preparing.push(ticket);
+        }
+        else{
+            groupedTickets.ready.push(ticket);
+        }
+    }
+
+    return res.status(200).json(
+        new ApiResponse(200, groupedTickets, "Kitchen tickets fetched successfully")
+    );
+});
+
+const updateKitchenTicketStatus = asyncHandler(async (req, res) => {
+    const { ticketId, action } = req.params;
+
+    if(!Types.ObjectId.isValid(ticketId)){
+        throw new ApiError(400, "Invalid kitchen ticket id");
+    }
+
+    const transitions = {
+        start: {
+            from: "PENDING",
+            to: "PREPARING"
+        },
+        ready: {
+            from: "PREPARING",
+            to: "READY"
+        },
+        served: {
+            from: "READY",
+            to: "SERVED"
+        }
+    }
+
+    const transition = transitions[action];
+
+    if(!transition){
+        throw new ApiError(400, "Invalid action");
+    }
+
+    const ticket = await KitchenTicket.findById(ticketId);
+
+    if(!ticket){
+        throw new ApiError(404, "Kitchen ticket not found");
+    }
+
+    if(ticket.status !== transition.from){
+        throw new ApiError(409, "Invalid Transition");
+    }
+
+    const updatedTicket = await KitchenTicket.findOneAndUpdate(
+        {
+            _id: ticketId,
+            status: transition.from,
+        },
+        {
+            status: transition.to
+        },
+        {
+            new: true,
+            runValidators: true,
+        }
+    );
+
+    if(!updatedTicket){
+        throw new ApiError(409, "Kitchen ticket status was changed earlier by another request");
+    }
+
+    const responseTicket = await KitchenTicket.findById(updatedTicket._id)
+        .select("ticketNumber table items status createdAt")
+        .populate("table", "tableNo")
+        .lean();
+
+    return res.status(200).json(
+        new ApiResponse(200, responseTicket, `Kitchen ticket successfully marked form: ${transition.from} to: ${transition.to}`)
+    );
+});
+
+export { createKitchenTicket, getKitchenTickets, updateKitchenTicketStatus };

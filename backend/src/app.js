@@ -7,6 +7,7 @@ import authRouter from "./routes/auth.routes.js";
 import tableRouter from "./routes/table.routes.js";
 import menuRouter from "./routes/menu.routes.js";
 import orderRouter from "./routes/order.routes.js";
+import kitchenRouter from "./routes/kitchen.routes.js";
 
 const app = express();
 
@@ -29,6 +30,7 @@ app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tables", tableRouter);
 app.use("/api/v1/menu", menuRouter);
 app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/kitchen-tickets", kitchenRouter);
 
 app.use(errorHandler);
 
