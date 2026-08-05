@@ -46,7 +46,7 @@ const createMenuItem = asyncHandler(async (req, res) => {
         )
 });
 
-const getMenuItems = asyncHandler(async (req, res) => {
+const getMenuItems = asyncHandler(async (res) => {
     const { category } = req.query;
 
     const isAdmin = req.user.role === "admin";
@@ -70,7 +70,7 @@ const getMenuItems = asyncHandler(async (req, res) => {
     );
 });
 
-const getMenuItemById = asyncHandler(async (req, res) => {
+const getMenuItemById = asyncHandler(async (res) => {
     const { id } = req.params;
 
     if(!Types.ObjectId.isValid(id)){

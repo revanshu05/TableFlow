@@ -9,6 +9,13 @@ const restaurantSettingsSchema = new Schema(
             min: 1,
         },
 
+        nextOrderNumber: {
+            type: Number,
+            required: true,
+            default: 1,
+            min: 1
+        },
+
         taxPercentage: {
             type: Number,
             required: true,
