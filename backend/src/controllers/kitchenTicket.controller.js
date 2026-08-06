@@ -177,7 +177,7 @@ const createKitchenTicket = asyncHandler(async (req, res) => {
 });
 
 
-const getKitchenTickets = asyncHandler(async (res) => {
+const getKitchenTickets = asyncHandler(async (req, res) => {
     
     const tickets = await KitchenTicket.find({
         status:{

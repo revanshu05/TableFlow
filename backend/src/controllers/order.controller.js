@@ -95,7 +95,7 @@ const createOrder = asyncHandler(async (req, res) => {
     );
 });
 
-const getOrders = asyncHandler(async (res) => {
+const getOrders = asyncHandler(async (req, res) => {
     const user = req.user;
 
     let orders;
@@ -136,7 +136,7 @@ const getOrders = asyncHandler(async (res) => {
     );
 });
 
-const getOrderById = asyncHandler(async (res) => {
+const getOrderById = asyncHandler(async (req, res) => {
     const { id } = req.params;
 
     if(!Types.ObjectId.isValid(id)){
@@ -244,7 +244,7 @@ const requestBill = asyncHandler(async (req, res) => {
 const completePayment = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const user = req.user;
-    const { paymentMethod, tip } = req.body;
+    let { paymentMethod, tip } = req.body;
     
     tip = tip ?? 0;
 

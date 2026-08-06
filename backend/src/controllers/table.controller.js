@@ -38,7 +38,7 @@ const createTable = asyncHandler(async (req, res) => {
 });
 
 
-const getTables = asyncHandler(async (res) => {
+const getTables = asyncHandler(async (req, res) => {
 
     const tables = await Table.find()
         .select("tableNo capacity status assignedWaiter currentOrder")
