@@ -58,6 +58,12 @@ const orderItemSchema = new Schema(
 
 const orderSchema = new Schema(
     {
+        orderNumber: {
+            type: Number,
+            required: true,
+            unique: true,
+        },
+
         table: {
             type: Schema.Types.ObjectId,
             ref: "Table",
@@ -112,21 +118,26 @@ const orderSchema = new Schema(
 
         status: {
             type: String,
-            enum: [
-                "OPEN",
-                "PAYMENT_PENDING",
-                "COMPLETED",
-            ],
+            enum: [ "OPEN", "PAYMENT_PENDING", "COMPLETED" ],
             default: "OPEN",
         },
 
         paymentStatus: {
             type: String,
-            enum: [
-                "UNPAID",
-                "PAID",
-            ],
+            enum: [ "UNPAID", "PAID" ],
             default: "UNPAID",
+        },
+
+        paymentMethod: {
+            type: String,
+            enum: [ "CASH", "CARD", "UPI" ],
+            default: null,
+        },
+
+        tip: {
+            type: Number,
+            default: 0,
+            min: 0,
         },
 
         notes: {
@@ -134,6 +145,21 @@ const orderSchema = new Schema(
             trim: true,
             default: "",
         },
+
+        requestedBillAt: {
+            type: Date,
+            default: null,
+        },
+
+        paidAt: {
+            type: Date,
+            default: null,
+        },
+
+        closedAt: {
+            type: Date,
+            default: null,
+        }
     },
     {
         timestamps: true,
