@@ -4,7 +4,7 @@ import { authorizeRoles, verifyJWT } from "../middlewares/auth.middleware.js";
 
 const tableRouter = Router();
 
-tableRouter.post("/create-table", verifyJWT, authorizeRoles("admin"), createTable);
-tableRouter.get("/get-tables", verifyJWT, authorizeRoles("admin", "waiter", "kitchen"), getTables);
+tableRouter.post("/", verifyJWT, authorizeRoles("admin"), createTable);
+tableRouter.get("/", verifyJWT, authorizeRoles("admin", "waiter", "kitchen"), getTables);
 
 export default tableRouter;
