@@ -1,6 +1,6 @@
 import { Router } from "express";
 
-import { createOrder, getOrderById, getOrders, requestBill } from "../controllers/order.controller.js";
+import { createOrder, getBill, getOrderById, getOrders, requestBill } from "../controllers/order.controller.js";
 import { verifyJWT, authorizeRoles } from "../middlewares/auth.middleware.js";
 import { createKitchenTicket } from "../controllers/kitchenTicket.controller.js";
 
@@ -11,5 +11,6 @@ orderRouter.get("/", verifyJWT, authorizeRoles("waiter", "admin", "cashier"), ge
 orderRouter.get("/:id", verifyJWT, authorizeRoles("waiter", "admin", "cashier"), getOrderById);
 orderRouter.post("/:id/send-to-kitchen", verifyJWT, authorizeRoles("waiter"), createKitchenTicket);
 orderRouter.patch("/:id/request-bill", verifyJWT, authorizeRoles("waiter", "admin"), requestBill);
+orderRouter.get("/:id/bill", verifyJWT, authorizeRoles("admin", "waiter", "cashier"), getBill);
 
 export default orderRouter;

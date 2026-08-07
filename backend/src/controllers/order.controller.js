@@ -317,9 +317,61 @@ const completePayment = asyncHandler(async (req, res) => {
     }
 });
 
+const getBill = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const user = req.user;
+
+    if(!Types.ObjectId.isValid(id)){
+        throw new ApiError(400, "Invalid order id");
+    }
+
+    const order = await Order.findById(id)
+        .select("orderNumber customer items subtotal tax discount grandTotal paymentMethod paymentStatus tip status table waiter createdAt paidAt")
+        .populate("table", "tableNo")
+        .populate("waiter", "name")
+        .lean();
+
+    if(!order){
+        throw new ApiError(404, "Order not found");
+    }
+    
+    if(user.role === "waiter"){
+        if(order.waiter._id !== user._id) throw new ApiError(403, "Not authorized");
+    }
+
+    if(!["COMPLETED", "PAYMENT_PENDING"].includes(order.status)){
+        throw new ApiError(409, "Bill is only available for PAYMENT_PENDING and COMPLETED orders");
+    }
+
+    const bill = {
+        orderNumber: order.orderNumber,
+        tableNo: order.table?.tableNo,
+        waiterName: order.waiter?.name,
+        customerName: order.customer.name,
+        customerPhone: order.customer.phone,
+        members: order.customer.members,
+        orderedItems: order.items,
+        subtotal: order.subtotal,
+        tax: order.tax,
+        discount: order.discount,
+        grandTotal: order.grandTotal,
+        paymentStatus: order.paymentStatus,
+        paymentMethod: order.paymentMethod,
+        tip: order.tip,
+        createdAt: order.createdAt,
+        paidAt: order.paidAt,
+    };
+
+    return res.status(200).json(
+        new ApiResponse(200, bill, "Bill fetched successfully")
+    );
+});
+
 export {
     createOrder, 
     getOrders,
     getOrderById,
     requestBill,
+    completePayment,
+    getBill,
 };
