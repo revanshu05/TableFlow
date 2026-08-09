@@ -77,8 +77,13 @@ function Footer() {
                 <span>Tables</span>
             </button>
 
-            <button className="flex items-center gap-2 text-zinc-400 hover:text-zinc-100 
-                hover:scale-110 transition-all duration-200">
+            <button 
+                className={`flex items-center gap-2 hover:scale-110 transition-all duration-200 ${
+                    location.pathname === "/more"
+                        ? "text-amber-400"
+                        : "text-zinc-400 hover:text-zinc-100"
+                }`}
+                onClick={() => navigate("/more")}>
                 <IoIosMore size={24} />
                 <span>More</span>
             </button>
