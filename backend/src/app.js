@@ -31,7 +31,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/tables", tableRouter);
 app.use("/api/v1/menu", menuRouter);
-app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/kitchen-tickets", kitchenRouter);
 app.use("/api/v1/restaurant-settings", restaurantSettingsRouter);
 app.use("/api/v1/analytics", analyticsRouter);
