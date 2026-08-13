@@ -1,82 +1,283 @@
 import { FaCheckCircle } from "react-icons/fa";
-import { LuChefHat } from "react-icons/lu";
-import { BsCheck2All } from "react-icons/bs";
+import { LuClock3 } from "react-icons/lu";
+import { MdOutlinePayment } from "react-icons/md";
+
 import { getAvatarColor } from "../../utils";
 
+
 const statusConfig = {
-    "In Progress": {
-        badge: "bg-yellow-500/20 text-yellow-400",
-        text: "Preparing order",
-        icon: <LuChefHat />,
+
+    OPEN: {
+        badge: "bg-orange-500/15 text-orange-400 border-orange-500/20",
+        icon: <LuClock3 />,
+        label: "Open",
     },
-    "Ready": {
-        badge: "bg-green-500/20 text-green-400",
-        text: "Ready to serve",
+
+    PAYMENT_PENDING: {
+        badge: "bg-blue-500/15 text-blue-400 border-blue-500/20",
+        icon: <MdOutlinePayment />,
+        label: "Payment Pending",
+    },
+
+    COMPLETED: {
+        badge: "bg-green-500/15 text-green-400 border-green-500/20",
         icon: <FaCheckCircle />,
+        label: "Completed",
     },
-    "Completed": {
-        badge: "bg-blue-500/20 text-blue-400",
-        text: "Order completed",
-        icon: <BsCheck2All />,
-    },
+
 };
 
+
 function OrderCard({
+    _id,
     customer,
     table,
-    orderType,
-    date,
-    items,
-    total,
     status,
+    kotCount,
+    grandTotal,
+    createdAt,
 }) {
-    const currentStatus = statusConfig[status];
+
+    const currentStatus =
+        statusConfig[status] || {
+            badge: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
+            icon: null,
+            label: status || "Unknown",
+        };
+
+
+    const customerName = customer?.name || "Unknown Customer";
+
+
+    const formattedTime = createdAt
+        ? new Date(createdAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+          })
+        : "--";
+
 
     return (
-        <div className="w-full bg-zinc-900 rounded-xl p-4 border border-zinc-900 hover:border-olive-500 transition-all duration-200">
-            <div className="flex justify-between items-start">
-                <div className="flex gap-3">
+        <div
+            className="
+                group
+                w-full
+                bg-zinc-900
+                rounded-xl
+                p-3.5
+                border
+                border-zinc-800
+                cursor-pointer
 
-                    <div className={`w-12 h-12 rounded-lg font-bold flex items-center justify-center ${getAvatarColor(customer)}`}>
-                        {customer
+                transition-all
+                duration-300
+                ease-out
+
+                hover:translate-y-0.5
+                hover:bg-zinc-800
+                hover:border-orange-500/40
+                hover:shadow-[0_10px_35px_rgba(249,115,22,0.12)]
+
+                active:scale-[0.98]
+            "
+        >
+
+            {/* TOP */}
+            <div className="flex justify-between items-start">
+
+                {/* Customer */}
+                <div className="flex items-center gap-3">
+
+                    <div
+                        className={`
+                            w-10
+                            h-10
+                            rounded-lg
+                            flex
+                            items-center
+                            justify-center
+                            font-bold
+                            text-sm
+                            ${getAvatarColor(customerName)}
+                        `}
+                    >
+                        {customerName
                             .split(" ")
                             .map((word) => word[0])
                             .join("")
-                            .slice(0, 2)}
+                            .slice(0, 2)
+                            .toUpperCase()
+                        }
                     </div>
+
 
                     <div>
-                        <h3 className="text-white font-semibold">{customer}</h3>
-                        <p className="text-zinc-400 text-sm">#{table} | {orderType}</p>
+
+                        <h3
+                            className="
+                                text-white
+                                font-semibold
+                                group-hover:text-orange-400
+                                transition-colors
+                            "
+                        >
+                            {customerName}
+                        </h3>
+
+                        <p className="text-zinc-500 text-xs mt-0.5">
+                            Order #{_id?.slice(-4).toUpperCase()}
+                        </p>
+
                     </div>
 
                 </div>
 
+
+                {/* Status */}
+                <div
+                    className={`
+                        inline-flex
+                        items-center
+                        gap-1.5
+                        px-2.5
+                        py-1
+                        rounded-full
+                        border
+                        text-xs
+                        font-medium
+                        ${currentStatus.badge}
+                    `}
+                >
+                    {currentStatus.icon}
+                    {currentStatus.label}
+                </div>
+
+            </div>
+
+
+            {/* ORDER INFORMATION */}
+            <div
+                className="
+                    grid
+                    grid-cols-2
+                    gap-y-3
+                    mt-4
+                "
+            >
+
+                {/* Table */}
+                <div>
+
+                    <p className="text-xs text-zinc-500">
+                        Table
+                    </p>
+
+                    <p className="text-sm text-zinc-200 font-medium mt-0.5">
+                        {table?.tableNo
+                            ? `Table ${table.tableNo}`
+                            : "Take Away"
+                        }
+                    </p>
+
+                </div>
+
+
+                {/* Members */}
+                <div>
+
+                    <p className="text-xs text-zinc-500">
+                        Members
+                    </p>
+
+                    <p className="text-sm text-zinc-200 font-medium mt-0.5">
+                        {customer?.members ?? "--"}
+                    </p>
+
+                </div>
+
+
+                {/* Items */}
+                <div>
+
+                    <p className="text-xs text-zinc-500">
+                        Items
+                    </p>
+
+                    <p className="text-sm text-zinc-200 font-medium mt-0.5">
+                        --
+                    </p>
+
+                </div>
+
+
+                {/* KOTs */}
+                <div>
+
+                    <p className="text-xs text-zinc-500">
+                        KOTs
+                    </p>
+
+                    <p className="text-sm text-zinc-200 font-medium mt-0.5">
+                        {kotCount ?? 0}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            {/* BOTTOM */}
+            <div
+                className="
+                    flex
+                    justify-between
+                    items-end
+                    mt-4
+                    pt-3
+                    border-t
+                    border-zinc-800
+                "
+            >
+
+                {/* Created */}
+                <div>
+
+                    <p className="text-xs text-zinc-500">
+                        Created
+                    </p>
+
+                    <p className="text-sm text-zinc-300 mt-0.5">
+                        {formattedTime}
+                    </p>
+
+                </div>
+
+
+                {/* Total */}
                 <div className="text-right">
-                    <div
-                        className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm ${currentStatus.badge}`}>
-                        {currentStatus.icon}
-                        {status}
-                    </div>
-                    <p className="text-zinc-500 text-xs mt-2">{currentStatus.text}</p>
+
+                    <p className="text-xs text-zinc-500">
+                        Order Total
+                    </p>
+
+                    <p
+                        className="
+                            text-lg
+                            font-bold
+                            text-orange-400
+                            mt-0.5
+                        "
+                    >
+                        ₹{grandTotal ?? 0}
+                    </p>
+
                 </div>
 
-            </div>
-
-            <div className="flex justify-between items-center mt-6 text-sm text-zinc-400">
-                <p>{date}</p>
-                <p>{items} Items</p>
-            </div>
-
-            <hr className="my-4 border-zinc-700" />
-
-            <div className="flex justify-between items-center">
-                <span className="text-white font-semibold">Total</span>
-                <span className="text-white font-bold text-lg">₹{total}</span>
             </div>
 
         </div>
     );
 }
+
 
 export default OrderCard;

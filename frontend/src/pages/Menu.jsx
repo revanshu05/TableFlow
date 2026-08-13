@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import BillContainer from "../components/Menu/BillContainer";
+import KotContainer from "../components/Menu/KotContainer";
 import MenuContainer from "../components/Menu/MenuContainer";
 import BackButton from "../components/shared/BackButton";
 import { FaLinesLeaning } from "react-icons/fa6";
@@ -37,7 +37,7 @@ function Menu(){
 
             {/*Right Container*/}
             <div className="my-4 mr-4 ml-1 rounded-2xl flex-1/4 bg-zinc-900 h-149">
-                <BillContainer />
+                <KotContainer />
             </div>
 
         </section>

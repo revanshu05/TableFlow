@@ -7,6 +7,7 @@ const initialState = {
   tableNo: "",
   orderId: "",
   orderType: "",
+  notes: "",
 };
 
 const customerSlice = createSlice({
@@ -14,19 +15,20 @@ const customerSlice = createSlice({
     initialState,
     reducers : {
         setCustomer : (state, action) => {
-            const {name, phone, members, orderType} = action.payload;
+            const {name, phone, members, orderType, orderId, notes} = action.payload;
             state.customerName = name;
             state.customerPhone = phone;
             state.members = members;
             state.orderType = orderType;
-            state.orderId = `${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
+            state.orderId = orderId || "";
+            state.notes = notes || "";
         },
 
         removeCustomer : (state) => {
             state.customerName = "";
             state.customerPhone = "";
             state.members = 0;
-            state.type = "";
+            state.orderType = "";
             state.tableNo = "";
         },
 

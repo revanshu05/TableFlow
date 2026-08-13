@@ -12,10 +12,10 @@ import restaurantSettings from "../models/restaurantSettings.model.js";
 
 
 const createKitchenTicket = asyncHandler(async (req, res) => {
-    const { orderId } = req.params;
+    const { id } = req.params;
     const { items } = req.body;
 
-    if (!Types.ObjectId.isValid(orderId)) {
+    if (!Types.ObjectId.isValid(id)) {
         throw new ApiError(400, "Invalid order id.");
     }
 
@@ -26,12 +26,7 @@ const createKitchenTicket = asyncHandler(async (req, res) => {
     const seenItems = new Set();
 
     for(const item of items){
-        const id = item.menuItem.toString();
 
-        if (seenItems.has(id)) {
-            throw new ApiError(400, "Duplicate menu items are not allowed");
-        }
-        
         if(!Types.ObjectId.isValid(item.menuItem)){
             throw new ApiError(400, "Invalid menu item id");
         }
@@ -39,11 +34,17 @@ const createKitchenTicket = asyncHandler(async (req, res) => {
         if(!Number.isInteger(item.quantity) || item.quantity < 1 || item.quantity > 10){
             throw new ApiError(400, "Quantity must be between 1 to 10");
         }
+        
+        const id = item.menuItem.toString();
+
+        if (seenItems.has(id)) {
+            throw new ApiError(400, "Duplicate menu items are not allowed");
+        }
 
         seenItems.add(id);
     }
 
-    const order = await Order.findById(orderId);
+    const order = await Order.findById(id);
 
     if(!order){
         throw new ApiError(404, "Order not found");

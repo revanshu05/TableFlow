@@ -58,29 +58,10 @@ function Tables() {
 
     const filteredTables = tables.filter((table) => {
 
-        if (filter === "ALL") {
-            return true;
-        }
+        if (filter === "ALL") return true;
 
         return table.status === filter;
-
     });
-
-
-    const filterButtonClass = (value) => `
-        px-3
-        py-1
-        rounded-lg
-        text-sm
-        font-semibold
-        transition-all
-        duration-200
-        ${
-            filter === value
-                ? "text-orange-400 shadow-md"
-                : "text-zinc-400 hover:text-zinc-100"
-        }
-    `;
 
 
     return (
@@ -138,13 +119,25 @@ function Tables() {
                     border
                     border-zinc-700
                     rounded-xl
-                    p-2
-                    gap-2
+                    p-1
+                    gap-1
                 ">
 
                     <button
                         onClick={() => setFilter("ALL")}
-                        className={filterButtonClass("ALL")}
+                        className={`
+                            px-4
+                            py-2
+                            rounded-lg
+                            text-sm
+                            transition-all
+                            duration-200
+                            ${
+                                filter === "ALL"
+                                    ? "bg-zinc-700 text-white"
+                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                            }
+                        `}
                     >
                         All
                     </button>
@@ -152,7 +145,19 @@ function Tables() {
 
                     <button
                         onClick={() => setFilter("AVAILABLE")}
-                        className={filterButtonClass("AVAILABLE")}
+                        className={`
+                            px-4
+                            py-2
+                            rounded-lg
+                            text-sm
+                            transition-all
+                            duration-200
+                            ${
+                                filter === "AVAILABLE"
+                                    ? "bg-green-500/20 text-green-400"
+                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                            }
+                        `}
                     >
                         Available
                     </button>
@@ -160,7 +165,19 @@ function Tables() {
 
                     <button
                         onClick={() => setFilter("OCCUPIED")}
-                        className={filterButtonClass("OCCUPIED")}
+                        className={`
+                            px-4
+                            py-2
+                            rounded-lg
+                            text-sm
+                            transition-all
+                            duration-200
+                            ${
+                                filter === "OCCUPIED"
+                                    ? "bg-red-500/20 text-red-400"
+                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                            }
+                        `}
                     >
                         Occupied
                     </button>

@@ -73,20 +73,12 @@ function Home() {
 
                 <div className="p-6">
 
-                    <div className="mb-6">
-
-                        <h1 className="
-                            text-2xl
-                            font-semibold
-                            text-zinc-100
-                        ">
-                            Dashboard
-                        </h1>
+                    <div className="mb-8">
 
                         <p className="
                             mt-1
-                            text-sm
-                            text-zinc-500
+                            text-md
+                            text-zinc-400
                         ">
                             Here's what's happening in your restaurant today.
                         </p>

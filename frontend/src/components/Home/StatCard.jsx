@@ -9,31 +9,18 @@ function StatCard({
     return (
         <div
             className={`
+                group
                 relative
                 overflow-hidden
                 rounded-2xl
                 border
+                border-zinc-700
                 p-5
                 transition-all
                 duration-300
                 hover:-translate-y-1
-                hover:shadow-xl
-
-                ${
-                    featured
-                        ? `
-                            bg-linear-to-br
-                            from-orange-500/20
-                            via-zinc-900
-                            to-zinc-900
-                            border-orange-500/30
-                          `
-                        : `
-                            bg-zinc-900
-                            border-zinc-800
-                            hover:border-zinc-700
-                          `
-                }
+                hover:border-orange-500/50
+                hover:shadow-[0_8px_30px_rgba(249,115,22,0.15)]
             `}
         >
 
@@ -59,8 +46,9 @@ function StatCard({
                 <div>
 
                     <p className="
-                        text-sm
+                        text-md
                         text-zinc-400
+                        group-hover:text-zinc-200
                     ">
                         {title}
                     </p>

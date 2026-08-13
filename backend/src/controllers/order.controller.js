@@ -20,6 +20,10 @@ const createOrder = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Customer name is required.");
     }
 
+    if (customer.members < 0 && customer.members > 10) {
+        throw new ApiError(400, "Members must be between 1 to 10");
+    }
+
     if (!Types.ObjectId.isValid(tableId)) {
         throw new ApiError(400, "Invalid table id.");
     }

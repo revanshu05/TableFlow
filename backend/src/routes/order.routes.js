@@ -6,10 +6,10 @@ import { createKitchenTicket } from "../controllers/kitchenTicket.controller.js"
 
 const orderRouter = Router();
 
-orderRouter.post("/", verifyJWT, authorizeRoles("waiter"), createOrder);
+orderRouter.post("/", verifyJWT, authorizeRoles("waiter", "admin"), createOrder);
 orderRouter.get("/", verifyJWT, authorizeRoles("waiter", "admin", "cashier"), getOrders);
 orderRouter.get("/:id", verifyJWT, authorizeRoles("waiter", "admin", "cashier"), getOrderById);
-orderRouter.post("/:id/send-to-kitchen", verifyJWT, authorizeRoles("waiter"), createKitchenTicket);
+orderRouter.post("/:id/create-ticket", verifyJWT, authorizeRoles("waiter", "admin"), createKitchenTicket);
 orderRouter.patch("/:id/request-bill", verifyJWT, authorizeRoles("waiter", "admin"), requestBill);
 orderRouter.get("/:id/bill", verifyJWT, authorizeRoles("admin", "waiter", "cashier"), getBill);
 
