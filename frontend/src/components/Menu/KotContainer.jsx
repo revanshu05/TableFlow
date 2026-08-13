@@ -76,12 +76,13 @@ function KOTContainer() {
 
         } catch (error) {
 
-            console.error("KOT ERROR:", error);
-            console.error("Response:", error.response);
-            console.error("Response data:", error.response?.data);
+            console.error(
+                "Failed to create kitchen ticket:",
+                error
+            );
 
             setError(
-                error.response?.data?.message || error.message ||
+                error.response?.data?.message ||
                 "Failed to send order to kitchen."
             );
 

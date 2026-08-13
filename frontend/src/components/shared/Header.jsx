@@ -41,7 +41,7 @@ function Header() {
         ">
 
             {/* Page title */}
-            <div className="w-1/4">
+            {/* <div className="w-1/4">
 
                 <h1 className="
                     text-xl
@@ -51,7 +51,7 @@ function Header() {
                     {pageTitle}
                 </h1>
 
-            </div>
+            </div> */}
 
 
             {/* Search */}

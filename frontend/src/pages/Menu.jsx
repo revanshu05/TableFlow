@@ -1,47 +1,229 @@
 import { useSelector } from "react-redux";
+import { IoRestaurantOutline } from "react-icons/io5";
+import { FaUser } from "react-icons/fa";
+
 import KotContainer from "../components/Menu/KotContainer";
 import MenuContainer from "../components/Menu/MenuContainer";
-import BackButton from "../components/shared/BackButton";
-import { FaLinesLeaning } from "react-icons/fa6";
 
-function Menu(){
-    const customerData = useSelector(state => state.customer);
+
+function Menu() {
+
+    const customerData = useSelector((state) => state.customer);
+
+    const isDineIn = customerData.orderType === "dine-in";
+
+
     return (
-        <section className="bg-zinc-800 h-[calc(100vh-6.5rem)] overflow-hidden flex">
-            
-            {/* Left Container */}
-            <div className="flex-3/4 bg-zinc-800 h-full ml-1">
-                
-                {/* TOP */}
-                <div className="flex items-center justify-between m-4">
-                    <div className="flex items-center gap-4">
-                        <BackButton/>
-                        <h1 className="text-2xl font-semibold text-zinc-200">Menu</h1>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <FaLinesLeaning size={40}
-                            className="text-orange-300 mt-2"/>
-                        
-                        <div className="text-right">
-                            <h1 className="text-zinc-200 text-lg font-semibold">{customerData.customerName || "Customer Name"}</h1>    
-                            { customerData.orderType === "dine-in" ? 
-                                (<p className="text-zinc-400 text-sm font-normal">Table No : {customerData.tableNo || "N/A"}</p>) : 
-                                (<p className="text-zinc-400 text-sm font-normal">take-away</p>)
-                            }
+
+        <section
+            className="
+                flex
+                h-[calc(100vh-3.5rem)]
+                overflow-hidden
+                bg-zinc-800
+            "
+        >
+
+            {/* =================================================
+                LEFT CONTAINER
+            ================================================= */}
+
+            <div
+                className="
+                    ml-1
+                    flex
+                    h-full
+                    flex-3/4
+                    flex-col
+                    bg-zinc-800
+                "
+            >
+
+                {/* ================= PAGE HEADER ================= */}
+
+                <div
+                    className="
+                        flex
+                        shrink-0
+                        items-center
+                        justify-between
+                        px-5
+                        py-4
+                    "
+                >
+
+                    {/* LEFT - PAGE TITLE */}
+
+                    <div className="flex items-center gap-3">
+
+                        <div
+                            className="
+                                flex
+                                h-10
+                                w-10
+                                items-center
+                                justify-center
+                                rounded-lg
+                                bg-orange-500/10
+                            "
+                        >
+
+                            <IoRestaurantOutline
+                                size={20}
+                                className="text-orange-400"
+                            />
+
                         </div>
+
+
+                        <h1
+                            className="
+                                text-xl
+                                font-semibold
+                                text-white
+                            "
+                        >
+                            Menu
+                        </h1>
+
                     </div>
+
+
+                    {/* RIGHT - CUSTOMER DETAILS */}
+
+                    <div className="flex items-center gap-3">
+
+                        {/* Customer Icon */}
+
+                        <div
+                            className="
+                                flex
+                                h-9
+                                w-9
+                                items-center
+                                justify-center
+                                rounded-lg
+                                bg-orange-500/10
+                            "
+                        >
+
+                            <FaUser
+                                size={14}
+                                className="text-orange-400"
+                            />
+
+                        </div>
+
+
+                        {/* Customer Information */}
+
+                        <div>
+
+                            <div className="flex items-center gap-2">
+
+                                <h2
+                                    className="
+                                        text-sm
+                                        font-semibold
+                                        text-zinc-200
+                                    "
+                                >
+                                    {customerData.customerName || "Customer Name"}
+                                </h2>
+
+
+                                <span className="text-zinc-600">
+                                    •
+                                </span>
+
+
+                                <span
+                                    className="
+                                        text-xs
+                                        text-zinc-400
+                                    "
+                                >
+                                    {customerData.members || 0} Members
+                                </span>
+
+
+                                <span className="text-zinc-600">
+                                    •
+                                </span>
+
+
+                                {isDineIn ? (
+
+                                    <span
+                                        className="
+                                            text-xs
+                                            text-zinc-400
+                                        "
+                                    >
+                                        Table {customerData.tableNo || "N/A"}
+                                    </span>
+
+                                ) : (
+
+                                    <span
+                                        className="
+                                            text-xs
+                                            text-zinc-400
+                                        "
+                                    >
+                                        Take-away
+                                    </span>
+
+                                )}
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
                 </div>
-                
-                <MenuContainer />
+
+
+                {/* MENU */}
+
+                <div
+                    className="
+                        min-h-0
+                        flex-1
+                    "
+                >
+
+                    <MenuContainer />
+
+                </div>
+
             </div>
 
-            {/*Right Container*/}
-            <div className="my-4 mr-4 ml-1 rounded-2xl flex-1/4 bg-zinc-900 h-149">
+
+            {/* RIGHT CONTAINER - KOT */}
+
+            <div
+                className="
+                    my-4
+                    mr-4
+                    ml-1
+                    h-[95%]
+                    flex-1/4
+                    rounded-2xl
+                    bg-zinc-900
+                "
+            >
+
                 <KotContainer />
+
             </div>
 
         </section>
-    )
+
+    );
+
 }
+
 
 export default Menu;

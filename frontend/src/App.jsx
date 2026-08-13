@@ -4,7 +4,7 @@
 
 	import ProtectedRoute from "./components/shared/ProtectedRoute";
 	import ProtectedLayout from "./components/shared/ProtectedLayout";
-	import {Home, Auth, Orders, Tables, Menu, More} from "./pages";
+	import {Home, Auth, Orders, Tables, Menu, More, Kitchen} from "./pages";
 	import Header from "./components/shared/Header";
 	import Footer from "./components/shared/Footer";
 	import Logout from "./components/shared/Logout";
@@ -49,7 +49,8 @@
 						<Route path="/tables" element={<Tables />} />
 						<Route path="/menu" element={<Menu />} />
 						<Route path="/more" element={<More />} />
-
+						<Route path="/kitchen" element={<Kitchen/>} />
+						
 					</Route>
 				</Route>
 

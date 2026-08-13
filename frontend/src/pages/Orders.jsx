@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
+import { IoReceiptOutline } from "react-icons/io5";
 import { FiPlus } from "react-icons/fi";
+
 import OrderCard from "../components/Orders/OrderCard";
 import Modal from "../components/shared/Modal";
 import CreateOrderForm from "../components/Orders/CreateOrderForm";
@@ -62,20 +64,28 @@ function Orders() {
     }, []);
 
 
+    /* =========================================
+       ROLE BASED FILTERING
+    ========================================= */
+
     const roleFilteredOrders = orders.filter((order) => {
 
         if (user?.role === "waiter") {
+
             return (
                 order.status === "OPEN" ||
                 order.status === "PAYMENT_PENDING"
             );
+
         }
 
         if (user?.role === "cashier") {
+
             return (
                 order.status === "PAYMENT_PENDING" ||
                 order.status === "COMPLETED"
             );
+
         }
 
         if (user?.role === "admin") {
@@ -83,7 +93,13 @@ function Orders() {
         }
 
         return false;
+
     });
+
+
+    /* =========================================
+       STATUS FILTER
+    ========================================= */
 
     const filteredOrders = roleFilteredOrders.filter((order) => {
 
@@ -96,11 +112,16 @@ function Orders() {
     });
 
 
+    /* =========================================
+       HANDLERS
+    ========================================= */
+
     const handleOrderClick = (orderId) => {
 
         navigate(`/orders/${orderId}`);
 
     };
+
 
     const handleCreateOrderClose = () => {
 
@@ -111,241 +132,316 @@ function Orders() {
 
     return (
 
-        <section className="
-            bg-zinc-800
-            h-[calc(100vh-3.5rem)]
-            overflow-hidden
-            flex
-            flex-col
-            items-center
-            relative
-        ">
-
-
-            {/* Header */}
-
-            <div className="
-                w-[94%]
+        <section
+            className="
                 flex
-                items-center
-                justify-end
-                mt-5
-            ">
+                h-[calc(100vh-3.5rem)]
+                flex-col
+                overflow-hidden
+                bg-zinc-800
+            "
+        >
 
-                <div className="flex items-center gap-4">
+            {/* PAGE HEADER */}
 
-                    {/* Status filters */}
+            <div
+                className="
+                    flex
+                    shrink-0
+                    items-center
+                    justify-between
+                    px-6
+                    py-3
+                "
+            >
 
-                    <div className="
-                        flex
-                        items-center
-                        bg-zinc-900
-                        border
-                        border-zinc-700
-                        rounded-xl
-                        p-1
-                        gap-1
-                    ">
+                {/* LEFT - PAGE TITLE */}
 
-                        <button
-                            onClick={() => setFilter("ALL")}
-                            className={`
-                                px-4
-                                py-2
-                                rounded-lg
-                                text-sm
-                                transition-all
-                                duration-200
-                                ${
-                                    filter === "ALL"
-                                        ? "bg-zinc-700 text-white"
-                                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-                                }
-                            `}
-                        >
-                            All
-                        </button>
+                <div className="flex items-center gap-3">
 
+                    <div
+                        className="
+                            flex
+                            h-10
+                            w-10
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-orange-500/10
+                        "
+                    >
 
-                        <button
-                            onClick={() => setFilter("OPEN")}
-                            className={`
-                                px-4
-                                py-2
-                                rounded-lg
-                                text-sm
-                                transition-all
-                                duration-200
-                                ${
-                                    filter === "OPEN"
-                                        ? "bg-orange-500/20 text-orange-400"
-                                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-                                }
-                            `}
-                        >
-                            Open
-                        </button>
-
-
-                        <button
-                            onClick={() => setFilter("PAYMENT_PENDING")}
-                            className={`
-                                px-4
-                                py-2
-                                rounded-lg
-                                text-sm
-                                transition-all
-                                duration-200
-                                ${
-                                    filter === "PAYMENT_PENDING"
-                                        ? "bg-blue-500/15 text-blue-400"
-                                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-                                }
-                            `}
-                        >
-                            Payment Pending
-                        </button>
-
-
-                        <button
-                            onClick={() => setFilter("COMPLETED")}
-                            className={`
-                                px-4
-                                py-2
-                                rounded-lg
-                                text-sm
-                                transition-all
-                                duration-200
-                                ${
-                                    filter === "COMPLETED"
-                                        ? "bg-green-500/20 text-green-400"
-                                        : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
-                                }
-                            `}
-                        >
-                            Completed
-                        </button>
+                        <IoReceiptOutline
+                            size={20}
+                            className="text-orange-400"
+                        />
 
                     </div>
+
+
+                    <h1
+                        className="
+                            text-xl
+                            font-semibold
+                            text-white
+                        "
+                    >
+                        Orders
+                    </h1>
+
+                </div>
+
+
+                {/* RIGHT - STATUS FILTERS */}
+
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-1
+                        rounded-xl
+                        border
+                        border-zinc-700
+                        bg-zinc-900
+                        p-1
+                    "
+                >
+
+                    {/* ALL */}
+
+                    <button
+                        onClick={() => setFilter("ALL")}
+                        className={`
+                            rounded-lg
+                            px-4
+                            py-2
+                            text-sm
+                            transition-all
+                            duration-200
+
+                            ${
+                                filter === "ALL"
+                                    ? "bg-zinc-700 text-white"
+                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                            }
+                        `}
+                    >
+                        All
+                    </button>
+
+
+                    {/* OPEN */}
+
+                    <button
+                        onClick={() => setFilter("OPEN")}
+                        className={`
+                            rounded-lg
+                            px-4
+                            py-2
+                            text-sm
+                            transition-all
+                            duration-200
+
+                            ${
+                                filter === "OPEN"
+                                    ? "bg-orange-500/20 text-orange-400"
+                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                            }
+                        `}
+                    >
+                        Open
+                    </button>
+
+
+                    {/* PAYMENT PENDING */}
+
+                    <button
+                        onClick={() => setFilter("PAYMENT_PENDING")}
+                        className={`
+                            rounded-lg
+                            px-4
+                            py-2
+                            text-sm
+                            transition-all
+                            duration-200
+
+                            ${
+                                filter === "PAYMENT_PENDING"
+                                    ? "bg-blue-500/15 text-blue-400"
+                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                            }
+                        `}
+                    >
+                        Payment Pending
+                    </button>
+
+
+                    {/* COMPLETED */}
+
+                    <button
+                        onClick={() => setFilter("COMPLETED")}
+                        className={`
+                            rounded-lg
+                            px-4
+                            py-2
+                            text-sm
+                            transition-all
+                            duration-200
+
+                            ${
+                                filter === "COMPLETED"
+                                    ? "bg-green-500/20 text-green-400"
+                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                            }
+                        `}
+                    >
+                        Completed
+                    </button>
 
                 </div>
 
             </div>
 
-            <div 
+
+            {/* HEADER DIVIDER */}
+
+            <div
                 className="
-                border
-                w-[94%]
-                mt-5
-                border-zinc-700"
-            ></div>
-
-            {/* ORDERS */}
-
-            <div className="
-                w-[97%]
-                p-4
-                mx-auto
-                mt-1
-                flex-1
-                overflow-y-auto
-            ">
+                    mx-6
+                    shrink-0
+                    border-b
+                    border-zinc-700
+                "
+            />
 
 
-                {/* Loading */}
+            {/* ORDERS CONTENT */}
+
+            <div
+                className="
+                    min-h-0
+                    flex-1
+                    overflow-y-auto
+                    px-6
+                    py-4
+                "
+            >
+
+                {/* LOADING */}
 
                 {loading && (
 
-                    <div className="
-                        flex
-                        justify-center
-                        items-center
-                        h-40
-                        text-zinc-400
-                    ">
+                    <div
+                        className="
+                            flex
+                            h-40
+                            items-center
+                            justify-center
+                            text-sm
+                            text-zinc-400
+                        "
+                    >
                         Loading orders...
                     </div>
 
                 )}
 
 
-                {/* Error */}
+                {/* ERROR */}
 
                 {!loading && error && (
 
-                    <div className="
-                        flex
-                        justify-center
-                        items-center
-                        h-40
-                        text-red-400
-                    ">
+                    <div
+                        className="
+                            flex
+                            h-40
+                            items-center
+                            justify-center
+                            text-sm
+                            text-red-400
+                        "
+                    >
                         {error}
                     </div>
 
                 )}
 
 
-                {/* Orders */}
+                {/* ORDERS */}
 
-                {!loading && !error && filteredOrders.length > 0 && (
+                {!loading &&
+                    !error &&
+                    filteredOrders.length > 0 && (
 
-                    <div className="
-                        grid
-                        grid-cols-3
-                        gap-5
-                    ">
+                        <div
+                            className="
+                                grid
+                                grid-cols-1
+                                gap-5
+                                pb-20
+                                md:grid-cols-2
+                                xl:grid-cols-3
+                            "
+                        >
 
-                        {filteredOrders.map((order) => (
+                            {filteredOrders.map((order) => (
 
-                            <div
-                                key={order._id}
-                                onClick={() => handleOrderClick(order._id)}
-                                className="cursor-pointer"
-                            >
+                                <div
+                                    key={order._id}
+                                    onClick={() =>
+                                        handleOrderClick(order._id)
+                                    }
+                                    className="cursor-pointer"
+                                >
 
-                                <OrderCard
-                                    {...order}
-                                />
+                                    <OrderCard
+                                        {...order}
+                                    />
 
-                            </div>
+                                </div>
 
-                        ))}
+                            ))}
 
-                    </div>
+                        </div>
 
-                )}
+                    )}
 
 
-                {/* Empty */}
+                {/* EMPTY */}
 
                 {!loading &&
                     !error &&
                     filteredOrders.length === 0 && (
 
-                    <div className="
-                        flex
-                        flex-col
-                        justify-center
-                        items-center
-                        h-60
-                        text-zinc-500
-                    ">
+                        <div
+                            className="
+                                flex
+                                h-60
+                                flex-col
+                                items-center
+                                justify-center
+                                text-zinc-500
+                            "
+                        >
 
-                        <p className="text-lg">
-                            No orders found
-                        </p>
+                            <p className="text-lg">
+                                No orders found
+                            </p>
 
-                        <p className="text-sm mt-1">
-                            {filter === "ALL"
-                                ? "There are no orders available."
-                                : `There are no ${filter.toLowerCase().replace("_", " ")} orders.`
-                            }
-                        </p>
+                            <p className="mt-1 text-sm">
 
-                    </div>
+                                {filter === "ALL"
+                                    ? "There are no orders available."
+                                    : `There are no ${filter
+                                        .toLowerCase()
+                                        .replace("_", " ")} orders.`
+                                }
 
-                )}
+                            </p>
+
+                        </div>
+
+                    )}
 
             </div>
 
@@ -353,6 +449,7 @@ function Orders() {
             {/* FLOATING CREATE ORDER BUTTON */}
 
             {["admin", "waiter"].includes(user?.role) && (
+
                 <button
                     onClick={() => setShowCreateModal(true)}
                     className="
@@ -361,10 +458,9 @@ function Orders() {
                         right-14
                         z-40
 
-                        w-16
-                        h-16
-
                         flex
+                        h-16
+                        w-16
                         items-center
                         justify-center
 
@@ -387,8 +483,11 @@ function Orders() {
                     "
                     title="Create Order"
                 >
+
                     <FiPlus size={28} />
+
                 </button>
+
             )}
 
 

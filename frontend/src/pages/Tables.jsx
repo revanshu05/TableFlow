@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { IoGridOutline } from "react-icons/io5";
+import { FiPlus } from "react-icons/fi";
 
 import TableCard from "../components/Tables/TableCard";
 import CreateTableForm from "../components/Tables/CreateTableForm";
@@ -13,11 +14,9 @@ function Tables() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [filter, setFilter] = useState("ALL");
+
+    // Temporary — Add Table will later move to Settings.
     const [showCreateModal, setShowCreateModal] = useState(false);
-
-    const user = useSelector((state) => state.auth.user);
-
-    const isAdmin = user?.role === "admin";
 
 
     const fetchTables = async () => {
@@ -61,81 +60,102 @@ function Tables() {
         if (filter === "ALL") return true;
 
         return table.status === filter;
+
     });
 
 
     return (
-        <section className="
-            bg-zinc-800
-            h-[calc(100vh-3.5rem)]
-            overflow-hidden
-            flex
-            flex-col
-            items-center
-        ">
 
-            {/* Top Controls */}
-            <div className="
-                w-[94%]
+        <section
+            className="
+                relative
                 flex
-                items-center
-                justify-between
-                mt-5
-            ">
+                h-[calc(100vh-3.5rem)]
+                flex-col
+                overflow-hidden
+                bg-zinc-800
+            "
+        >
 
-                {/* Admin Action */}
-                <div>
+            {/* PAGE HEADER */}
 
-                    {isAdmin && (
-                        <button
-                            onClick={() => setShowCreateModal(true)}
-                            className="
-                                px-4
-                                py-2
-                                rounded-lg
-                                bg-cyan-700
-                                text-white
-                                text-sm
-                                font-medium
-                                hover:bg-cyan-800
-                                hover:shadow-lg
-                                hover:shadow-cyan-900/30
-                                transition-all
-                                duration-200
-                            "
-                        >
-                            + Add Table
-                        </button>
-                    )}
+            <div
+                className="
+                    flex
+                    shrink-0
+                    items-center
+                    justify-between
+                    px-6
+                    py-3
+                "
+            >
+
+                {/* Left - Page Title */}
+
+                <div className="flex items-center gap-3">
+
+                    <div
+                        className="
+                            flex
+                            h-10
+                            w-10
+                            items-center
+                            justify-center
+                            rounded-lg
+                            bg-orange-500/10
+                        "
+                    >
+
+                        <IoGridOutline
+                            size={20}
+                            className="text-orange-400"
+                        />
+
+                    </div>
+
+
+                    <h1
+                        className="
+                            text-xl
+                            font-semibold
+                            text-white
+                        "
+                    >
+                        Tables
+                    </h1>
 
                 </div>
 
 
-                {/* Filters */}
-                <div className="
-                    flex
-                    items-center
-                    bg-zinc-900
-                    border
-                    border-zinc-700
-                    rounded-xl
-                    p-1
-                    gap-1
-                ">
+                {/* Right - Filters */}
+
+                <div
+                    className="
+                        flex
+                        items-center
+                        gap-1
+                        rounded-xl
+                        border
+                        border-zinc-700
+                        bg-zinc-900
+                        p-1
+                    "
+                >
 
                     <button
                         onClick={() => setFilter("ALL")}
                         className={`
+                            rounded-lg
                             px-4
                             py-2
-                            rounded-lg
                             text-sm
                             transition-all
                             duration-200
+
                             ${
                                 filter === "ALL"
                                     ? "bg-zinc-700 text-white"
-                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
                             }
                         `}
                     >
@@ -146,16 +166,17 @@ function Tables() {
                     <button
                         onClick={() => setFilter("AVAILABLE")}
                         className={`
+                            rounded-lg
                             px-4
                             py-2
-                            rounded-lg
                             text-sm
                             transition-all
                             duration-200
+
                             ${
                                 filter === "AVAILABLE"
                                     ? "bg-green-500/20 text-green-400"
-                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
                             }
                         `}
                     >
@@ -166,16 +187,17 @@ function Tables() {
                     <button
                         onClick={() => setFilter("OCCUPIED")}
                         className={`
+                            rounded-lg
                             px-4
                             py-2
-                            rounded-lg
                             text-sm
                             transition-all
                             duration-200
+
                             ${
                                 filter === "OCCUPIED"
                                     ? "bg-red-500/20 text-red-400"
-                                    : "text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800"
+                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
                             }
                         `}
                     >
@@ -186,98 +208,172 @@ function Tables() {
 
             </div>
 
-            <div 
+
+            {/* HEADER DIVIDER */}
+
+            <div
                 className="
-                border
-                w-[94%]
-                mt-5
-                border-zinc-700"
-            ></div>
+                    mx-6
+                    shrink-0
+                    border-b
+                    border-zinc-700
+                "
+            />
 
 
-            {/* Tables */}
-            <div className="
-                w-[97%]
-                p-4
-                mx-auto
-                mt-1
-                flex-1
-                overflow-y-auto
-            ">
+            {/* TABLE CONTENT */}
+
+            <div
+                className="
+                    min-h-0
+                    flex-1
+                    overflow-y-auto
+                    px-6
+                    py-4
+                "
+            >
 
                 {/* Loading */}
+
                 {loading && (
-                    <div className="
-                        flex
-                        justify-center
-                        items-center
-                        h-40
-                        text-zinc-400
-                    ">
+
+                    <div
+                        className="
+                            flex
+                            h-40
+                            items-center
+                            justify-center
+                            text-sm
+                            text-zinc-400
+                        "
+                    >
                         Loading tables...
                     </div>
+
                 )}
 
 
                 {/* Error */}
+
                 {!loading && error && (
-                    <div className="
-                        flex
-                        justify-center
-                        items-center
-                        h-40
-                        text-red-400
-                    ">
+
+                    <div
+                        className="
+                            flex
+                            h-40
+                            items-center
+                            justify-center
+                            text-sm
+                            text-red-400
+                        "
+                    >
                         {error}
                     </div>
+
                 )}
 
 
                 {/* Tables */}
-                {!loading && !error && filteredTables.length > 0 && (
-                    <div className="
-                        grid
-                        grid-cols-5
-                        gap-5
-                        pb-4
-                    ">
 
-                        {filteredTables.map((table) => (
+                {!loading &&
+                    !error &&
+                    filteredTables.length > 0 && (
 
-                            <TableCard
-                                key={table._id}
-                                tableNo={table.tableNo}
-                                seats={table.capacity}
-                                status={table.status}
-                                waiter={table.assignedWaiter}
-                            />
+                        <div
+                            className="
+                                grid
+                                grid-cols-2
+                                gap-5
+                                pb-4
+                                md:grid-cols-3
+                                lg:grid-cols-4
+                                xl:grid-cols-5
+                            "
+                        >
 
-                        ))}
+                            {filteredTables.map((table) => (
 
-                    </div>
-                )}
+                                <TableCard
+                                    key={table._id}
+                                    tableNo={table.tableNo}
+                                    seats={table.capacity}
+                                    status={table.status}
+                                    waiter={table.assignedWaiter}
+                                />
+
+                            ))}
+
+                        </div>
+
+                    )}
 
 
                 {/* No Tables */}
+
                 {!loading &&
                     !error &&
                     filteredTables.length === 0 && (
-                        <div className="
-                            flex
-                            justify-center
-                            items-center
-                            h-40
-                            text-zinc-500
-                        ">
+
+                        <div
+                            className="
+                                flex
+                                h-40
+                                items-center
+                                justify-center
+                                text-sm
+                                text-zinc-500
+                            "
+                        >
                             No tables found.
                         </div>
-                    )
-                }
+
+                    )}
 
             </div>
 
 
-            {/* Create Table Modal */}
+            {/* TEMPORARY ADD TABLE BUTTON */}
+
+            <button
+                onClick={() => setShowCreateModal(true)}
+                className="
+                    fixed
+                    bottom-7
+                    right-7
+                    z-40
+
+                    flex
+                    h-14
+                    w-14
+                    items-center
+                    justify-center
+
+                    rounded-full
+
+                    bg-blue-600
+                    text-white
+
+                    shadow-lg
+                    shadow-blue-600/30
+
+                    transition-all
+                    duration-200
+
+                    hover:scale-105
+                    hover:bg-blue-500
+
+                    active:scale-95
+                "
+                title="Add Table"
+            >
+
+                <FiPlus size={24} />
+
+            </button>
+
+
+            {/* CREATE TABLE MODAL */}
+
             <CreateTableForm
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
@@ -285,7 +381,9 @@ function Tables() {
             />
 
         </section>
+
     );
+
 }
 
 

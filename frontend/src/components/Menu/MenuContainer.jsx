@@ -173,10 +173,14 @@ function MenuContainer() {
             h-[85%]
             flex
             flex-col
-            m-4
-            pt-2
+            mx-5
         ">
 
+            <div className="
+                border-b
+                border-zinc-700
+                mb-3
+            " />
 
             {/* Categories */}
 
@@ -184,7 +188,6 @@ function MenuContainer() {
                 flex
                 gap-3
                 overflow-x-auto
-                pb-2
             ">
 
                 {categories.map((category) => {
@@ -245,7 +248,7 @@ function MenuContainer() {
             <div className="
                 border-b
                 border-zinc-700
-                my-4
+                my-3
             " />
 
 

@@ -4,6 +4,7 @@ import Orders from './Orders'
 import Tables from './Tables'
 import Menu from './Menu'
 import More from './More'
+import Kitchen from './Kitchen'
 
 export {
     Auth,
@@ -12,4 +13,5 @@ export {
     Tables,
     Menu,
     More,
+    Kitchen
 }

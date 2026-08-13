@@ -4,7 +4,7 @@ import { getKitchenTickets, updateKitchenTicketStatus } from "../controllers/kit
 
 const kitchenRouter = Router();
 
-kitchenRouter.get("/tickets", verifyJWT, authorizeRoles("kitchen"), getKitchenTickets);
-kitchenRouter.patch("/tickets/:ticketId/:action", verifyJWT, authorizeRoles("kitchen"), updateKitchenTicketStatus);
+kitchenRouter.get("/", verifyJWT, authorizeRoles("kitchen", "admin"), getKitchenTickets);
+kitchenRouter.patch("/:ticketId/:action", verifyJWT, authorizeRoles("kitchen", "admin"), updateKitchenTicketStatus);
 
 export default kitchenRouter;
