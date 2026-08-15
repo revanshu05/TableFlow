@@ -276,7 +276,7 @@ const completePayment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Invalid order id");
     }
 
-    if(!["admin", "cashier"].includes(user.role)){
+    if(!["admin", "cashier", "waiter"].includes(user.role)){
         throw new ApiError(403, "Unauthorized");
     }
 

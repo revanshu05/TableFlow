@@ -217,6 +217,7 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
     const { ticketId } = req.params;
     const { items } = req.body;
 
+
     if (!Types.ObjectId.isValid(ticketId)) {
         throw new ApiError(400, "Invalid ticket id");
     }
@@ -225,11 +226,13 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Items must be an array");
     }
 
+
     const session = await mongoose.startSession();
 
     try {
 
         session.startTransaction();
+
 
         const ticket = await KitchenTicket.findById(ticketId)
             .session(session);
@@ -267,7 +270,9 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
 
             existingItems.set(
                 item.menuItem.toString(),
-                item
+                {
+                    ...item.toObject()
+                }
             );
 
         }
@@ -293,10 +298,10 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
                 );
             }
 
+
             const menuItemId = item.menuItem.toString();
 
-            const existingItem =
-                existingItems.get(menuItemId);
+            const existingItem = existingItems.get(menuItemId);
 
             if (!existingItem) {
                 throw new ApiError(
@@ -325,7 +330,6 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
 
         }
 
-
         const quantityRemoved = new Map();
 
         for (const oldItem of ticket.items) {
@@ -333,20 +337,23 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
             const menuItemId =
                 oldItem.menuItem.toString();
 
-            const newItem =
+            const updatedItem =
                 existingItems.get(menuItemId);
 
             const newQuantity =
-                newItem ? newItem.quantity : 0;
+                updatedItem
+                    ? updatedItem.quantity
+                    : 0;
 
-            const removed =
+            const removedQuantity =
                 oldItem.quantity - newQuantity;
 
-            if (removed > 0) {
+
+            if (removedQuantity > 0) {
 
                 quantityRemoved.set(
                     menuItemId,
-                    removed
+                    removedQuantity
                 );
 
             }
@@ -366,8 +373,10 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
         }
 
 
-        for (const [menuItemId, removedQuantity]
-            of quantityRemoved) {
+        for (
+            const [menuItemId, removedQuantity]
+            of quantityRemoved
+        ) {
 
             const orderItem =
                 orderItemMap.get(menuItemId);
@@ -389,12 +398,11 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
 
         }
 
-
         order.items = Array.from(orderItemMap.values());
-
 
         const updatedItems =
             Array.from(existingItems.values());
+
 
         if (updatedItems.length === 0) {
 
@@ -417,18 +425,15 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
 
         }
 
-
         let subtotal = 0;
 
         for (const item of order.items) {
 
-            subtotal +=
-                item.quantity * item.unitPrice;
+            subtotal += item.quantity * item.unitPrice;
 
         }
 
         order.subtotal = subtotal;
-
 
         const settings =
             await restaurantSettings.findOne()
@@ -441,7 +446,6 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
             );
         }
 
-
         order.tax =
             (order.subtotal *
                 settings.taxPercentage) / 100;
@@ -451,13 +455,12 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
             order.tax -
             order.discount;
 
-
         await order.save({ session });
 
         await session.commitTransaction();
 
-
         return res.status(200).json(
+
             new ApiResponse(
                 200,
                 {
@@ -470,6 +473,7 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
                             : ticket,
 
                     order,
+
                 },
                 updatedItems.length === 0
                     ? "KOT deleted successfully"
@@ -477,17 +481,11 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
             )
         );
 
-
     } catch (error) {
-
         await session.abortTransaction();
-
         throw error;
-
     } finally {
-
         await session.endSession();
-
     }
 
 });

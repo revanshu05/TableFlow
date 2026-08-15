@@ -12,6 +12,7 @@ import Logout from "./components/shared/Logout";
 import { getCurrentUser } from "./api/user.api";
 import { setCredentials, logout } from "./redux/slices/authSlice";
 import OrderDetails from "./pages/OrderDetails";
+import Payment from "./pages/Payment";
 
 function App() {
 	const dispatch = useDispatch();
@@ -52,6 +53,7 @@ return (
 					<Route path="/more" element={<More />} />
 					<Route path="/kitchen" element={<Kitchen/>} />
 					<Route path="/orders/:orderId" element={<OrderDetails/>} />
+					<Route path="/orders/:orderId/payment" element={<Payment />} />
 					
 				</Route>
 			</Route>

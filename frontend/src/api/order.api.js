@@ -26,4 +26,21 @@ const requestBill = (orderId) => {
     return api.patch(`/orders/${orderId}/request-bill`);
 };
 
-export { createOrder, getOrders, createKitchenTicket, getOrderKots, getOrderById, requestBill };
+const completePayment = (orderId, paymentData) => {
+    return api.patch(`/orders/${orderId}/complete-payment`, paymentData);
+};
+
+const getBill = (orderId) => {
+    return api.get(`/orders/${orderId}/bill`);
+};
+
+export { 
+    createOrder,
+    getOrders, 
+    createKitchenTicket, 
+    getOrderKots, 
+    getOrderById, 
+    requestBill,
+    completePayment,
+    getBill,
+};
