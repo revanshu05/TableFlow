@@ -194,6 +194,26 @@ const getOrderById = asyncHandler(async (req, res) => {
     );
 });
 
+const getOrderKots = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    if(!Types.ObjectId.isValid(id)){
+        throw new ApiError(400, "Invalid order id");
+    }
+
+    const tickets = await KitchenTicket.find({
+        order: id
+    })
+        .select("ticketNumber table items status createdAt")
+        .populate("table", "tableNo")
+        .sort({ createdAt: 1 })
+        .lean();
+
+    return res.status(200).json(
+        new ApiResponse(200, tickets, "KOTs fetched successfully")
+    );
+});
+
 const requestBill = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const user = req.user;
@@ -375,6 +395,7 @@ export {
     createOrder, 
     getOrders,
     getOrderById,
+    getOrderKots,
     requestBill,
     completePayment,
     getBill,

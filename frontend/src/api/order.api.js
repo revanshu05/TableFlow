@@ -14,4 +14,16 @@ const createKitchenTicket = (orderId, items) => {
     );
 };
 
-export { createOrder, getOrders, createKitchenTicket };
+const getOrderKots = (orderId) => {
+    return api.get(`/orders/${orderId}/kots`);
+};
+
+const getOrderById = (orderId) => {
+    return api.get(`/orders/${orderId}`);
+};
+
+const requestBill = (orderId) => {
+    return api.patch(`/orders/${orderId}/request-bill`);
+};
+
+export { createOrder, getOrders, createKitchenTicket, getOrderKots, getOrderById, requestBill };

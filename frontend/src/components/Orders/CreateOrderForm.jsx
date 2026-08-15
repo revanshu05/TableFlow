@@ -103,8 +103,6 @@ function CreateOrderForm({ onClose }) {
 
         setSelectedTable(table);
 
-        // If current members exceed the selected
-        // table capacity, adjust it automatically.
         if (members > table.capacity) {
             setMembers(table.capacity);
         }
@@ -151,7 +149,6 @@ function CreateOrderForm({ onClose }) {
 
             setSubmitting(true);
 
-
             const response = await createOrder({
                 customer: {
                     name: customerName.trim(),
@@ -161,11 +158,6 @@ function CreateOrderForm({ onClose }) {
                 tableId: selectedTable._id,
                 notes: notes.trim(),
             });
-
-            console.log("CREATE ORDER RESPONSE:", response);
-            console.log("CREATE ORDER DATA:", response.data);
-            console.log("CREATED ORDER:", response.data.data);
-            console.log("MONGO ORDER ID:", response.data.data?._id);
 
             const createdOrder = response.data.data;
 

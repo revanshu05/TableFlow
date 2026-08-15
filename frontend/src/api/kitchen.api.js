@@ -8,4 +8,7 @@ const updateKitchenTicketStatus = (ticketId, action) => {
     return api.patch(`/kitchen-tickets/${ticketId}/${action}`);
 }
 
-export { getKitchenTickets, updateKitchenTicketStatus };
+const updateKitchenTicket = (ticketId, items) => {
+    return api.patch(`/kitchen-tickets/${ticketId}`, { items });
+}
+export { getKitchenTickets, updateKitchenTicketStatus, updateKitchenTicket };

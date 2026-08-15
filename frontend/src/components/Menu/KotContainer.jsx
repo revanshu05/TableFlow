@@ -20,8 +20,6 @@ function KOTContainer() {
         (state) => state.customer.orderId
     );
 
-    console.log("KOT ORDER ID:", orderId);
-
     const [sending, setSending] = useState(false);
     const [error, setError] = useState("");
     const [success, setSuccess] = useState("");

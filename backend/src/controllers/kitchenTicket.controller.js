@@ -177,7 +177,6 @@ const createKitchenTicket = asyncHandler(async (req, res) => {
     }
 });
 
-
 const getKitchenTickets = asyncHandler(async (req, res) => {
     
     const tickets = await KitchenTicket.find({
@@ -212,6 +211,287 @@ const getKitchenTickets = asyncHandler(async (req, res) => {
         new ApiResponse(200, groupedTickets, "Kitchen tickets fetched successfully")
     );
 });
+
+const updateKitchenTicket = asyncHandler(async (req, res) => {
+
+    const { ticketId } = req.params;
+    const { items } = req.body;
+
+    if (!Types.ObjectId.isValid(ticketId)) {
+        throw new ApiError(400, "Invalid ticket id");
+    }
+
+    if (!Array.isArray(items)) {
+        throw new ApiError(400, "Items must be an array");
+    }
+
+    const session = await mongoose.startSession();
+
+    try {
+
+        session.startTransaction();
+
+        const ticket = await KitchenTicket.findById(ticketId)
+            .session(session);
+
+        if (!ticket) {
+            throw new ApiError(404, "KOT not found");
+        }
+
+        if (ticket.status !== "PENDING") {
+            throw new ApiError(
+                400,
+                "Only pending KOTs can be edited"
+            );
+        }
+
+
+        const order = await Order.findById(ticket.order)
+            .session(session);
+
+        if (!order) {
+            throw new ApiError(404, "Order not found");
+        }
+
+        if (order.status !== "OPEN") {
+            throw new ApiError(
+                400,
+                "Only open orders can have their KOTs edited"
+            );
+        }
+
+
+        const existingItems = new Map();
+
+        for (const item of ticket.items) {
+
+            existingItems.set(
+                item.menuItem.toString(),
+                item
+            );
+
+        }
+
+
+        for (const item of items) {
+
+            if (!item.menuItem) {
+                throw new ApiError(
+                    400,
+                    "Menu item is required"
+                );
+            }
+
+            if (
+                typeof item.quantity !== "number" ||
+                !Number.isInteger(item.quantity) ||
+                item.quantity < 0
+            ) {
+                throw new ApiError(
+                    400,
+                    "Quantity must be a non-negative integer"
+                );
+            }
+
+            const menuItemId = item.menuItem.toString();
+
+            const existingItem =
+                existingItems.get(menuItemId);
+
+            if (!existingItem) {
+                throw new ApiError(
+                    400,
+                    "New items cannot be added to an existing KOT. Create a new KOT instead."
+                );
+            }
+
+            if (item.quantity > existingItem.quantity) {
+                throw new ApiError(
+                    400,
+                    `Quantity for ${existingItem.name} cannot be increased`
+                );
+            }
+
+            if (item.quantity === 0) {
+
+                existingItems.delete(menuItemId);
+
+            }
+            else {
+
+                existingItem.quantity = item.quantity;
+
+            }
+
+        }
+
+
+        const quantityRemoved = new Map();
+
+        for (const oldItem of ticket.items) {
+
+            const menuItemId =
+                oldItem.menuItem.toString();
+
+            const newItem =
+                existingItems.get(menuItemId);
+
+            const newQuantity =
+                newItem ? newItem.quantity : 0;
+
+            const removed =
+                oldItem.quantity - newQuantity;
+
+            if (removed > 0) {
+
+                quantityRemoved.set(
+                    menuItemId,
+                    removed
+                );
+
+            }
+
+        }
+
+
+        const orderItemMap = new Map();
+
+        for (const item of order.items) {
+
+            orderItemMap.set(
+                item.menuItem.toString(),
+                item
+            );
+
+        }
+
+
+        for (const [menuItemId, removedQuantity]
+            of quantityRemoved) {
+
+            const orderItem =
+                orderItemMap.get(menuItemId);
+
+            if (!orderItem) {
+                throw new ApiError(
+                    500,
+                    "Order item data is inconsistent with KOT"
+                );
+            }
+
+            orderItem.quantity -= removedQuantity;
+
+            if (orderItem.quantity <= 0) {
+
+                orderItemMap.delete(menuItemId);
+
+            }
+
+        }
+
+
+        order.items = Array.from(orderItemMap.values());
+
+
+        const updatedItems =
+            Array.from(existingItems.values());
+
+        if (updatedItems.length === 0) {
+
+            await KitchenTicket.deleteOne(
+                { _id: ticketId },
+                { session }
+            );
+
+            order.kotCount = Math.max(
+                0,
+                order.kotCount - 1
+            );
+
+        }
+        else {
+
+            ticket.items = updatedItems;
+
+            await ticket.save({ session });
+
+        }
+
+
+        let subtotal = 0;
+
+        for (const item of order.items) {
+
+            subtotal +=
+                item.quantity * item.unitPrice;
+
+        }
+
+        order.subtotal = subtotal;
+
+
+        const settings =
+            await restaurantSettings.findOne()
+                .session(session);
+
+        if (!settings) {
+            throw new ApiError(
+                500,
+                "Restaurant settings not initialized"
+            );
+        }
+
+
+        order.tax =
+            (order.subtotal *
+                settings.taxPercentage) / 100;
+
+        order.grandTotal =
+            order.subtotal +
+            order.tax -
+            order.discount;
+
+
+        await order.save({ session });
+
+        await session.commitTransaction();
+
+
+        return res.status(200).json(
+            new ApiResponse(
+                200,
+                {
+                    ticketDeleted:
+                        updatedItems.length === 0,
+
+                    ticket:
+                        updatedItems.length === 0
+                            ? null
+                            : ticket,
+
+                    order,
+                },
+                updatedItems.length === 0
+                    ? "KOT deleted successfully"
+                    : "KOT updated successfully"
+            )
+        );
+
+
+    } catch (error) {
+
+        await session.abortTransaction();
+
+        throw error;
+
+    } finally {
+
+        await session.endSession();
+
+    }
+
+});
+
 
 const updateKitchenTicketStatus = asyncHandler(async (req, res) => {
     const { ticketId, action } = req.params;
@@ -279,4 +559,4 @@ const updateKitchenTicketStatus = asyncHandler(async (req, res) => {
     );
 });
 
-export { createKitchenTicket, getKitchenTickets, updateKitchenTicketStatus };
+export { createKitchenTicket, getKitchenTickets, updateKitchenTicket, updateKitchenTicketStatus };
