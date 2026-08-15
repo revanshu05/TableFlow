@@ -1,17 +1,20 @@
 import { useSelector } from "react-redux";
 import { IoRestaurantOutline } from "react-icons/io5";
 import { FaUser } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa6";
 
+import { useState } from "react";
 import KotContainer from "../components/Menu/KotContainer";
 import MenuContainer from "../components/Menu/MenuContainer";
+import CreateMenuItemForm from "../components/Menu/CreateMenuItemForm";
 
 
 function Menu() {
 
     const customerData = useSelector((state) => state.customer);
-
     const isDineIn = customerData.orderType === "dine-in";
-
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const user = useSelector((state) => state.auth.user);
 
     return (
 
@@ -218,6 +221,52 @@ function Menu() {
                 <KotContainer />
 
             </div>
+
+            {user?.role === "admin" && (
+
+                <button
+                    onClick={() => setShowCreateModal(true)}
+                    className="
+                        fixed
+                        bottom-7
+                        left-65
+                        z-40
+
+                        flex
+                        h-14
+                        w-14
+                        items-center
+                        justify-center
+
+                        rounded-full
+
+                        bg-blue-600
+                        text-white
+
+                        shadow-lg
+                        shadow-blue-600/30
+
+                        transition-all
+                        duration-200
+
+                        hover:scale-105
+                        hover:bg-blue-500
+
+                        active:scale-95
+                    "
+                    title="Add Menu Item"
+                >
+
+                    <FaPlus size={22} />
+
+                </button>
+
+            )}
+
+            <CreateMenuItemForm 
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+            />
 
         </section>
 

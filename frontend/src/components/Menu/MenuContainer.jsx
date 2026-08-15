@@ -170,7 +170,7 @@ function MenuContainer() {
     return (
 
         <div className="
-            h-[85%]
+            h-full
             flex
             flex-col
             mx-5

@@ -15,7 +15,6 @@ function Tables() {
     const [error, setError] = useState("");
     const [filter, setFilter] = useState("ALL");
 
-    // Temporary — Add Table will later move to Settings.
     const [showCreateModal, setShowCreateModal] = useState(false);
 
 
@@ -299,6 +298,7 @@ function Tables() {
                                     seats={table.capacity}
                                     status={table.status}
                                     waiter={table.assignedWaiter}
+                                    currentOrder={table.currentOrder}
                                 />
 
                             ))}

@@ -8,4 +8,8 @@ const getMenuItems = (category = "") => {
     return api.get(`/menu${query}`);
 };
 
-export { getMenuItems, };
+const createMenuItem = (data) => {
+    return api.post("/menu", data);
+};
+
+export { getMenuItems, createMenuItem };

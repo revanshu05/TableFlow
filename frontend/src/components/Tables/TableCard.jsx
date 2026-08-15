@@ -1,7 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
-import { updateTable } from "../../redux/slices/customerSlice";
+import {
+    updateTable,
+    setCustomer,
+} from "../../redux/slices/customerSlice";
 
 
 function TableCard({
@@ -9,6 +12,7 @@ function TableCard({
     seats,
     status,
     waiter,
+    currentOrder,
 }) {
 
     const navigate = useNavigate();
@@ -17,13 +21,27 @@ function TableCard({
 
     const handleClick = () => {
 
-        dispatch(updateTable({
-            tableNo,
-        }));
+        if (status === "AVAILABLE") return;
 
-        if (status === "OCCUPIED") return;
+        if (status === "OCCUPIED") {
 
-        navigate("/menu");
+            dispatch(updateTable({
+                tableNo,
+            }));
+
+
+            dispatch(setCustomer({
+                name: currentOrder?.customer?.name || "",
+                phone: currentOrder?.customer?.phone || "",
+                members: currentOrder?.customer?.members || 0,
+                orderType: currentOrder?.orderType,
+                orderId: currentOrder?._id,
+            }));
+
+
+            navigate("/menu");
+        }
+
     };
 
 
@@ -72,6 +90,7 @@ function TableCard({
         >
 
             {/* Table number + status */}
+
             <div className="
                 flex
                 justify-between
@@ -105,12 +124,14 @@ function TableCard({
 
 
             {/* Table information */}
+
             <div className="
                 mt-6
                 space-y-3
             ">
 
                 {/* Seats */}
+
                 <div className="
                     flex
                     justify-between
@@ -133,6 +154,7 @@ function TableCard({
 
 
                 {/* Waiter */}
+
                 <div className="
                     flex
                     justify-between

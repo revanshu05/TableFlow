@@ -43,6 +43,7 @@ const getTables = asyncHandler(async (req, res) => {
     const tables = await Table.find()
         .select("tableNo capacity status assignedWaiter currentOrder")
         .populate("assignedWaiter", "name")
+        .populate("currentOrder", "customer orderType")
         .sort({ tableNo: 1 })
         .lean();
 

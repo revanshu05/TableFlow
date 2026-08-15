@@ -719,6 +719,7 @@ function Payment() {
                     ================================= */}
 
                     <div className="
+                        h-135
                         flex
                         flex-col
                         rounded-2xl

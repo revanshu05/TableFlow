@@ -36,9 +36,36 @@ function Auth() {
                 password,
             });
 
-            dispatch(setCredentials(response.data.data));
+            const user = response.data.data;
+            const role = user.user.role;
 
-            navigate("/");
+            console.log("logged in user: ", user);
+            console.log("User role: ", role);
+
+            dispatch(setCredentials(user));
+
+            switch (role) {
+
+                case "admin":
+                    navigate("/");
+                    break;
+
+                case "waiter":
+                    navigate("/orders");
+                    break;
+
+                case "cashier":
+                    navigate("/billing");
+                    break;
+
+                case "kitchen":
+                    navigate("/kitchen");
+                    break;
+
+                default:
+                    navigate("/");
+            }
+
         } catch (error) {
             console.error("Login error:", error);
 
