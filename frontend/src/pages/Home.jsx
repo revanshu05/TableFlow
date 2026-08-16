@@ -24,8 +24,14 @@ function Home() {
         const fetchAnalytics = async () => {
 
             try {
-                const response = await getDashboardAnalytics();
-                setAnalytics(response.data.data);
+
+                const response =
+                    await getDashboardAnalytics();
+
+                setAnalytics(
+                    response.data.data
+                );
+
             } catch (error) {
 
                 console.error(
@@ -39,111 +45,151 @@ function Home() {
                 );
 
             } finally {
+
                 setLoading(false);
+
             }
+
         };
+
 
         fetchAnalytics();
 
     }, []);
 
 
-    if(loading){
+    if (loading) {
+
         return (
-            <div className="p-6 text-zinc-400">
+            <div className="
+                flex
+                h-full
+                items-center
+                justify-center
+                p-6
+                text-sm
+                text-zinc-400
+            ">
                 Loading dashboard...
             </div>
         );
+
     }
 
 
-    if(error){
+    if (error) {
+
         return (
-            <div className="p-6 text-red-400">
+            <div className="
+                p-6
+                text-sm
+                text-red-400
+            ">
                 {error}
             </div>
         );
+
     }
 
 
     return (
-        <div className="p-6">
 
-            <div className="mt-6 text-zinc-300">
+        <div className="
+            min-h-full
+            bg-zinc-800
+            p-6
+        ">
 
-                <div className="p-6">
+            {/* Header */}
 
-                    <div className="mb-8">
+            <div className="mb-8">
 
-                        <p className="
-                            mt-1
-                            text-md
-                            text-zinc-400
-                        ">
-                            Here's what's happening in your restaurant today.
-                        </p>
+                <h1 className="
+                    text-xl
+                    font-semibold
+                    text-zinc-100
+                ">
+                    Dashboard
+                </h1>
 
-                    </div>
+                <p className="
+                    mt-1
+                    text-sm
+                    text-zinc-500
+                ">
+                    Here's what's happening in your
+                    restaurant today.
+                </p>
 
-
-                    <div className="
-                        grid
-                        grid-cols-1
-                        sm:grid-cols-2
-                        xl:grid-cols-3
-                        gap-4
-                    ">
-
-                        <StatCard
-                            title="Today's Revenue"
-                            value={`₹${analytics.todayRevenue}`}
-                            icon={IoCashOutline}
-                        />
+            </div>
 
 
-                        <StatCard
-                            title="Today's Orders"
-                            value={analytics.todayOrders}
-                            icon={IoReceiptOutline}
-                        />
+            {/* Cards */}
+
+            <div className="
+                grid
+                grid-cols-1
+                gap-4
+                sm:grid-cols-2
+                xl:grid-cols-3
+            ">
+
+                <StatCard
+                    title="Today's Revenue"
+                    value={`₹${Number(
+                        analytics.todayRevenue || 0
+                    ).toFixed(2)}`}
+                    icon={IoCashOutline}
+                    color="orange"
+                />
 
 
-                        <StatCard
-                            title="Active Orders"
-                            value={analytics.activeOrders}
-                            icon={IoRestaurantOutline}
-                        />
+                <StatCard
+                    title="Today's Orders"
+                    value={analytics.todayOrders}
+                    icon={IoReceiptOutline}
+                    color="blue"
+                />
 
 
-                        <StatCard
-                            title="Payment Pending"
-                            value={analytics.paymentPendingOrders}
-                            subtitle="Orders waiting for payment"
-                            icon={IoTimeOutline}
-                        />
+                <StatCard
+                    title="Active Orders"
+                    value={analytics.activeOrders}
+                    icon={IoRestaurantOutline}
+                    color="purple"
+                />
 
 
-                        <StatCard
-                            title="Occupied Tables"
-                            value={analytics.occupiedTables}
-                            icon={IoGridOutline}
-                        />
+                <StatCard
+                    title="Payment Pending"
+                    value={analytics.paymentPendingOrders}
+                    subtitle="Orders waiting for payment"
+                    icon={IoTimeOutline}
+                    color="amber"
+                />
 
 
-                        <StatCard
-                            title="Available Tables"
-                            value={analytics.availableTables}
-                            icon={IoCheckmarkCircleOutline}
-                        />
+                <StatCard
+                    title="Occupied Tables"
+                    value={analytics.occupiedTables}
+                    icon={IoGridOutline}
+                    color="red"
+                />
 
-                    </div>
 
-                </div>
+                <StatCard
+                    title="Available Tables"
+                    value={analytics.availableTables}
+                    icon={IoCheckmarkCircleOutline}
+                    color="green"
+                />
 
             </div>
 
         </div>
+
     );
+
 }
 
 

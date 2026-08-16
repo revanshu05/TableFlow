@@ -11,6 +11,8 @@ import {
     IoLogOutOutline,
 } from "react-icons/io5";
 
+import { BiSolidDish } from "react-icons/bi";
+
 import { GiCook } from "react-icons/gi";
 import { TbReportMoney } from "react-icons/tb";
 
@@ -32,7 +34,7 @@ function Sidebar() {
                     name: "Home",
                     path: "/",
                     icon: IoHomeOutline,
-                    roles: ["admin", "waiter", "cashier", "kitchen"],
+                    roles: ["admin"],
                 },
             ],
         },
@@ -50,18 +52,18 @@ function Sidebar() {
                     name: "Menu",
                     path: "/menu",
                     icon: IoRestaurantOutline,
-                    roles: ["admin", "waiter", "kitchen"],
+                    roles: ["admin", "waiter"],
                 },
                 {
                     name: "Orders",
                     path: "/orders",
                     icon: IoReceiptOutline,
-                    roles: ["admin", "waiter", "cashier"],
+                    roles: ["admin", "waiter"],
                 },
                 {
                     name: "Kitchen",
                     path: "/kitchen",
-                    icon: IoRestaurantOutline,
+                    icon: BiSolidDish,
                     roles: ["admin", "kitchen"],
                 },
                 {
@@ -154,7 +156,7 @@ function Sidebar() {
 
                         <div className="space-y-1">
 
-                            {section.items.map((item) => {
+                            {visibleItems.map((item) => {
 
                                 const Icon = item.icon;
 

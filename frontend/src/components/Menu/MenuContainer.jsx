@@ -188,6 +188,7 @@ function MenuContainer() {
                 flex
                 gap-3
                 overflow-x-auto
+                min-h-fit
             ">
 
                 {categories.map((category) => {

@@ -15,6 +15,7 @@ import Payment from "./pages/Payment";
 import Team from "./pages/Team";
 import Billing from "./pages/Billing";
 import BillDetails from "./pages/BillDetails";
+import Settings from "./pages/Settings";
 
 function App() {
 	const dispatch = useDispatch();
@@ -58,6 +59,7 @@ return (
 					<Route path="/team" element={<Team />} />
 					<Route path="/billing" element={<Billing />} />
 					<Route path="/billing/:orderId" element={<BillDetails />} />
+					<Route path="/settings" element={<Settings />} />
 
 				</Route>
 			</Route>

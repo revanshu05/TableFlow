@@ -3,7 +3,6 @@ import { IoGridOutline } from "react-icons/io5";
 import { FiPlus } from "react-icons/fi";
 
 import TableCard from "../components/Tables/TableCard";
-import CreateTableForm from "../components/Tables/CreateTableForm";
 
 import { getTables } from "../api/table.api";
 
@@ -330,55 +329,6 @@ function Tables() {
                     )}
 
             </div>
-
-
-            {/* TEMPORARY ADD TABLE BUTTON */}
-
-            <button
-                onClick={() => setShowCreateModal(true)}
-                className="
-                    fixed
-                    bottom-7
-                    right-7
-                    z-40
-
-                    flex
-                    h-14
-                    w-14
-                    items-center
-                    justify-center
-
-                    rounded-full
-
-                    bg-blue-600
-                    text-white
-
-                    shadow-lg
-                    shadow-blue-600/30
-
-                    transition-all
-                    duration-200
-
-                    hover:scale-105
-                    hover:bg-blue-500
-
-                    active:scale-95
-                "
-                title="Add Table"
-            >
-
-                <FiPlus size={24} />
-
-            </button>
-
-
-            {/* CREATE TABLE MODAL */}
-
-            <CreateTableForm
-                isOpen={showCreateModal}
-                onClose={() => setShowCreateModal(false)}
-                onTableCreated={fetchTables}
-            />
 
         </section>
 

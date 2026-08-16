@@ -471,13 +471,13 @@ function Orders() {
                     onClick={() => setShowCreateModal(true)}
                     className="
                         fixed
-                        bottom-6
-                        right-14
+                        bottom-10
+                        right-10
                         z-40
 
                         flex
-                        h-16
-                        w-16
+                        h-18
+                        w-18
                         items-center
                         justify-center
 
@@ -501,7 +501,7 @@ function Orders() {
                     title="Create Order"
                 >
 
-                    <FiPlus size={28} />
+                    <FiPlus size={40} />
 
                 </button>
 

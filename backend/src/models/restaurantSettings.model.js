@@ -2,6 +2,33 @@ import { Schema, model } from "mongoose";
 
 const restaurantSettingsSchema = new Schema(
     {
+        restaurantName: {
+            type: String,
+            required: true,
+            trim: true,
+            default: "My Restaurant",
+        },
+
+        phone: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+
+        address: {
+            type: String,
+            trim: true,
+            default: "",
+        },
+
+        taxPercentage: {
+            type: Number,
+            required: true,
+            default: 5,
+            min: 0,
+            max: 100,
+        },
+
         nextKitchenTicketNumber: {
             type: Number,
             required: true,
@@ -13,15 +40,7 @@ const restaurantSettingsSchema = new Schema(
             type: Number,
             required: true,
             default: 1,
-            min: 1
-        },
-
-        taxPercentage: {
-            type: Number,
-            required: true,
-            default: 5,
-            min: 0,
-            max: 100,
+            min: 1,
         },
     },
     {
@@ -29,5 +48,9 @@ const restaurantSettingsSchema = new Schema(
     }
 );
 
-const restaurantSettings = model("RestaurantSettings", restaurantSettingsSchema);
+const restaurantSettings = model(
+    "RestaurantSettings",
+    restaurantSettingsSchema
+);
+
 export default restaurantSettings;

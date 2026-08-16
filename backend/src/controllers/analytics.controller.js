@@ -31,6 +31,12 @@ const getDashboardAnalytics = asyncHandler(async (req, res) => {
                 },
             },
         },
+        {
+            $project: {
+                _id: 0,
+                todayRevenue: {$round: ["$todayRevenue", 2],}
+            }
+        }
     ]);
 
     const todayOrdersPromise = Order.countDocuments({
