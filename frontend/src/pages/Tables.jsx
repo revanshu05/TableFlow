@@ -145,9 +145,9 @@ function Tables() {
                         onClick={() => setFilter("ALL")}
                         className={`
                             rounded-lg
-                            px-4
+                            px-3
                             py-2
-                            text-sm
+                            text-xs
                             transition-all
                             duration-200
 
@@ -166,9 +166,9 @@ function Tables() {
                         onClick={() => setFilter("AVAILABLE")}
                         className={`
                             rounded-lg
-                            px-4
+                            px-3
                             py-2
-                            text-sm
+                            text-xs
                             transition-all
                             duration-200
 
@@ -187,9 +187,9 @@ function Tables() {
                         onClick={() => setFilter("OCCUPIED")}
                         className={`
                             rounded-lg
-                            px-4
+                            px-3
                             py-2
-                            text-sm
+                            text-xs
                             transition-all
                             duration-200
 

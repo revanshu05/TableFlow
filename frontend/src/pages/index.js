@@ -3,7 +3,6 @@ import Home from './Home'
 import Orders from './Orders'
 import Tables from './Tables'
 import Menu from './Menu'
-import More from './More'
 import Kitchen from './Kitchen'
 
 export {
@@ -12,6 +11,5 @@ export {
     Orders,
     Tables,
     Menu,
-    More,
     Kitchen
 }

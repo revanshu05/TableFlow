@@ -9,7 +9,7 @@ const orderRouter = Router();
 orderRouter.post("/", verifyJWT, authorizeRoles("waiter", "admin"), createOrder);
 orderRouter.get("/", verifyJWT, authorizeRoles("waiter", "admin", "cashier"), getOrders);
 orderRouter.get("/:id", verifyJWT, authorizeRoles("waiter", "admin", "cashier"), getOrderById);
-orderRouter.get("/:id/kots", verifyJWT, authorizeRoles("waiter", "admin"), getOrderKots);
+orderRouter.get("/:id/kots", verifyJWT, authorizeRoles("waiter", "admin", "cashier"), getOrderKots);
 orderRouter.post("/:id/create-ticket", verifyJWT, authorizeRoles("waiter", "admin"), createKitchenTicket);
 orderRouter.patch("/:id/request-bill", verifyJWT, authorizeRoles("waiter", "admin"), requestBill);
 orderRouter.patch("/:id/complete-payment", verifyJWT, authorizeRoles("admin", "waiter", "cashier"), completePayment);

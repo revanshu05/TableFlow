@@ -3,38 +3,54 @@ import ApiResponse from '../utils/apiResponse.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import User from '../models/user.model.js';
 
+import { Types } from 'mongoose';
+
 const registerUser = asyncHandler(async (req, res) => {
 
-    const {name, email, password, phone, role} = req.body;
-
-    if([name, email, password].some(
-        (field) => field?.trim() === ""
-    )){
-        throw new ApiError(400, "All fields are required");
-    }
-
-    const existingUser = await User.findOne({email});
-
-    if(existingUser){
-        throw new ApiError(409, "User already exists !!");
-    }
-
-    const user = await User.create({
+    const {
         name,
         email,
         password,
         phone,
         role,
+    } = req.body;
+
+
+    if (!name?.trim() || !email?.trim() || !password) {
+        throw new ApiError(400, "Name, email and password are required");
+    }
+
+
+    const existingUser = await User.findOne({
+        email: email.trim().toLowerCase(),
     });
 
-    const createdUser = await User.findById(user._id).select("-password");
+    if (existingUser) {
+        throw new ApiError(409, "User already exists");
+    }
+
+
+    const user = await User.create({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        phone: phone?.trim(),
+        role,
+    });
+
+
+    const createdUser = await User
+        .findById(user._id)
+        .select("-password -refreshToken");
+
 
     return res
         .status(201)
         .json(
-            new ApiResponse(201, createdUser, "User registered successfully.")
+            new ApiResponse(201, createdUser, "User created successfully")
         );
 });
+
 
 const getCurrentUser = asyncHandler(async (req, res) => {
     return res.status(200).json(
@@ -42,4 +58,98 @@ const getCurrentUser = asyncHandler(async (req, res) => {
     );
 });
 
-export {registerUser, getCurrentUser};
+
+const getTeamMembers = asyncHandler(async (req, res) => {
+
+    const users = await User.find()
+        .select("-password -refreshToken")
+        .sort({ createdAt: 1 })
+        .lean();
+
+    return res.status(200).json(
+        new ApiResponse(200, users, "Team members fetched successfully")
+    );
+});
+
+
+const updateTeamMember = asyncHandler(async (req, res) => {
+
+    const { userId } = req.params;
+
+    const {
+        name,
+        phone,
+        role,
+        active,
+    } = req.body;
+
+
+    if (!Types.ObjectId.isValid(userId)) {
+        throw new ApiError(400, "Invalid user ID");
+    }
+
+    const user = await User.findById(userId);
+
+    if(!user) {
+        throw new ApiError(404, "Team member not found");
+    }
+
+    if(user._id.toString() === req.user._id.toString() && active === false){
+        throw new ApiError(400, "You cannot deactivate your own account");
+    }
+
+    if(role !== undefined){
+
+        const allowedRoles = [
+            "admin",
+            "waiter",
+            "cashier",
+            "kitchen",
+        ];
+
+        if(!allowedRoles.includes(role)){
+            throw new ApiError(
+                400,
+                "Invalid role"
+            );
+        }
+
+        user.role = role;
+    }
+
+    if(name !== undefined){
+        if(!name.trim()){
+            throw new ApiError(400, "Name cannot be empty");
+        }
+
+        user.name = name.trim();
+    }
+
+
+    if(phone !== undefined){
+        user.phone = phone.trim();
+    }
+
+
+    if(active !== undefined){
+
+        if(typeof active !== "boolean"){
+            throw new ApiError(400, "Active must be a boolean");
+        }
+
+        user.active = active;
+    }
+
+    await user.save();
+
+    const updatedUser = await User.findById(user._id)
+        .select("-password -refreshToken");
+
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedUser, "Team member updated successfully")
+    );
+
+});
+
+export {registerUser, getCurrentUser, getTeamMembers, updateTeamMember};

@@ -29,7 +29,7 @@ function Sidebar() {
             section: "Overview",
             items: [
                 {
-                    name: "Dashboard",
+                    name: "Home",
                     path: "/",
                     icon: IoHomeOutline,
                     roles: ["admin", "waiter", "cashier", "kitchen"],
@@ -67,20 +67,8 @@ function Sidebar() {
                 {
                     name: "Billing",
                     path: "/billing",
-                    icon: IoReceiptOutline,
+                    icon: TbReportMoney,
                     roles: ["admin", "cashier"],
-                },
-            ],
-        },
-
-        {
-            section: "Reports",
-            items: [
-                {
-                    name: "Analytics",
-                    path: "/analytics",
-                    icon: IoBarChartOutline,
-                    roles: ["admin"],
                 },
             ],
         },

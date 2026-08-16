@@ -48,6 +48,10 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid email or password");
     }
 
+    if(!user.active){
+        throw new ApiError(403, "Your account is inactive. Please contact the administrator.");
+    }
+
     const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id);
 
     const loggedInUser = await User.findById(user._id).select("-password -refreshToken");

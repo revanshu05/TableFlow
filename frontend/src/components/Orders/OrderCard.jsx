@@ -1,4 +1,4 @@
-import { FaCheckCircle } from "react-icons/fa";
+import { FiCheckCircle } from "react-icons/fi";
 import { LuClock3 } from "react-icons/lu";
 import { MdOutlinePayment } from "react-icons/md";
 
@@ -21,7 +21,7 @@ const statusConfig = {
 
     COMPLETED: {
         badge: "bg-green-500/15 text-green-400 border-green-500/20",
-        icon: <FaCheckCircle />,
+        icon: <FiCheckCircle />,
         label: "Completed",
     },
 
@@ -30,6 +30,7 @@ const statusConfig = {
 
 function OrderCard({
     _id,
+    orderNumber,
     customer,
     table,
     status,
@@ -74,7 +75,6 @@ function OrderCard({
                 ease-out
 
                 hover:translate-y-0.5
-                hover:bg-zinc-800
                 hover:border-orange-500/40
                 hover:shadow-[0_10px_35px_rgba(249,115,22,0.12)]
 
@@ -121,11 +121,11 @@ function OrderCard({
                                 transition-colors
                             "
                         >
-                            {customerName}
+                            Order #{orderNumber}
                         </h3>
 
                         <p className="text-zinc-500 text-xs mt-0.5">
-                            Order #{_id?.slice(-4).toUpperCase()}
+                            {customerName}
                         </p>
 
                     </div>

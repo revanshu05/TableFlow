@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+
 import {
     FiArrowLeft,
     FiCreditCard,
     FiDollarSign,
-    FiUser,
-    FiUsers,
     FiCheckCircle,
     FiLoader,
+    FiPercent,
 } from "react-icons/fi";
 
 import {
@@ -25,6 +25,9 @@ function Payment() {
 
     const [tip, setTip] = useState(0);
     const [tipInput, setTipInput] = useState("");
+
+    const [discount, setDiscount] = useState(0);
+    const [discountInput, setDiscountInput] = useState("");
 
     const [paymentMethod, setPaymentMethod] = useState("CASH");
 
@@ -50,11 +53,6 @@ function Payment() {
 
                 const orderData = response.data.data;
 
-                /*
-                 * Payment should only be available
-                 * for PAYMENT_PENDING orders.
-                 */
-
                 if (orderData.status !== "PAYMENT_PENDING") {
 
                     setError(
@@ -66,15 +64,29 @@ function Payment() {
 
                 setOrder(orderData);
 
+
                 /*
-                 * If the order already has a tip,
-                 * show it in the input.
+                 * Existing tip
                  */
 
                 if (orderData.tip > 0) {
 
                     setTip(orderData.tip);
                     setTipInput(String(orderData.tip));
+
+                }
+
+
+                /*
+                 * Existing discount
+                 */
+
+                if (orderData.discount > 0) {
+
+                    setDiscount(orderData.discount);
+                    setDiscountInput(
+                        String(orderData.discount)
+                    );
 
                 }
 
@@ -112,10 +124,6 @@ function Payment() {
 
         const value = e.target.value;
 
-        /*
-         * Allow empty input while typing.
-         */
-
         if (value === "") {
 
             setTipInput("");
@@ -148,6 +156,37 @@ function Payment() {
 
 
     /* =========================================
+       DISCOUNT
+    ========================================= */
+
+    const handleDiscountChange = (e) => {
+
+        const value = e.target.value;
+
+        if (value === "") {
+
+            setDiscountInput("");
+            setDiscount(0);
+
+            return;
+        }
+
+        const numericValue = Number(value);
+
+        if (
+            !Number.isNaN(numericValue) &&
+            numericValue >= 0
+        ) {
+
+            setDiscountInput(value);
+            setDiscount(numericValue);
+
+        }
+
+    };
+
+
+    /* =========================================
        COMPLETE PAYMENT
     ========================================= */
 
@@ -157,25 +196,34 @@ function Payment() {
             return;
         }
 
+
+        if (discount > order.grandTotal) {
+
+            setError(
+                "Discount cannot be greater than the order total."
+            );
+
+            return;
+        }
+
+
         try {
 
             setPaying(true);
             setError("");
+
 
             await completePayment(
                 order._id,
                 {
                     paymentMethod,
                     tip,
+                    discount,
                 }
             );
 
-            /*
-             * Payment successful.
-             * Go back to order details.
-             */
 
-            navigate(`/orders/${order._id}`);
+            navigate(`/billing/${order._id}`);
 
         } catch (error) {
 
@@ -292,8 +340,18 @@ function Payment() {
     }
 
 
+    /*
+     * Final amount:
+     *
+     * Grand Total
+     * - Discount
+     * + Tip
+     */
+
     const amountToPay =
-        order.grandTotal + tip;
+        order.grandTotal -
+        discount +
+        tip;
 
 
     return (
@@ -368,8 +426,6 @@ function Payment() {
                 </div>
 
 
-                {/* Payment pending badge */}
-
                 <div className="
                     rounded-full
                     border
@@ -419,10 +475,11 @@ function Payment() {
                         border-zinc-700
                         bg-zinc-900
                         p-5
+                        h-fit
                     ">
 
 
-                        {/* Customer information */}
+                        {/* CUSTOMER */}
 
                         <div className="
                             mb-5
@@ -442,10 +499,12 @@ function Payment() {
                                     rounded-lg
                                     bg-orange-500/10
                                 ">
-                                    <FiUser
+
+                                    <FiDollarSign
                                         size={17}
                                         className="text-orange-400"
                                     />
+
                                 </div>
 
 
@@ -477,13 +536,9 @@ function Payment() {
                                             •
                                         </span>
 
-                                        <span className="
-                                            flex
-                                            items-center
-                                            gap-1
-                                        ">
-                                            <FiUsers size={12} />
+                                        <span>
                                             {order.customer?.members || 1}
+                                            {" Members"}
                                         </span>
 
                                     </div>
@@ -493,9 +548,7 @@ function Payment() {
                             </div>
 
 
-                            <div className="
-                                text-right
-                            ">
+                            <div className="text-right">
 
                                 <p className="
                                     text-xs
@@ -517,8 +570,6 @@ function Payment() {
                         </div>
 
 
-                        {/* Divider */}
-
                         <div className="
                             mb-4
                             border-t
@@ -526,7 +577,7 @@ function Payment() {
                         " />
 
 
-                        {/* Items */}
+                        {/* ITEMS */}
 
                         <div>
 
@@ -622,7 +673,7 @@ function Payment() {
                         </div>
 
 
-                        {/* Totals */}
+                        {/* TOTALS */}
 
                         <div className="
                             mt-5
@@ -636,6 +687,7 @@ function Payment() {
                                 justify-between
                                 text-sm
                             ">
+
                                 <span className="text-zinc-500">
                                     Subtotal
                                 </span>
@@ -643,6 +695,7 @@ function Payment() {
                                 <span className="text-zinc-300">
                                     ₹{order.subtotal.toFixed(2)}
                                 </span>
+
                             </div>
 
 
@@ -652,6 +705,7 @@ function Payment() {
                                 justify-between
                                 text-sm
                             ">
+
                                 <span className="text-zinc-500">
                                     Tax
                                 </span>
@@ -659,27 +713,44 @@ function Payment() {
                                 <span className="text-zinc-300">
                                     ₹{order.tax.toFixed(2)}
                                 </span>
+
                             </div>
 
 
-                            {order.discount > 0 && (
+                            <div className="
+                                mt-2
+                                flex
+                                justify-between
+                                text-sm
+                            ">
 
-                                <div className="
-                                    mt-2
-                                    flex
-                                    justify-between
-                                    text-sm
-                                ">
-                                    <span className="text-zinc-500">
-                                        Discount
-                                    </span>
+                                <span className="text-zinc-500">
+                                    Discount
+                                </span>
 
-                                    <span className="text-green-400">
-                                        - ₹{order.discount.toFixed(2)}
-                                    </span>
-                                </div>
+                                <span className="text-green-400">
+                                    - ₹{discount.toFixed(2)}
+                                </span>
 
-                            )}
+                            </div>
+
+
+                            <div className="
+                                mt-2
+                                flex
+                                justify-between
+                                text-sm
+                            ">
+
+                                <span className="text-zinc-500">
+                                    Tip
+                                </span>
+
+                                <span className="text-zinc-300">
+                                    ₹{tip.toFixed(2)}
+                                </span>
+
+                            </div>
 
 
                             <div className="
@@ -704,7 +775,7 @@ function Payment() {
                                     font-semibold
                                     text-orange-400
                                 ">
-                                    ₹{order.grandTotal.toFixed(2)}
+                                    ₹{amountToPay.toFixed(2)}
                                 </span>
 
                             </div>
@@ -719,7 +790,7 @@ function Payment() {
                     ================================= */}
 
                     <div className="
-                        h-135
+                        h-fit
                         flex
                         flex-col
                         rounded-2xl
@@ -730,7 +801,7 @@ function Payment() {
                     ">
 
 
-                        {/* Tip */}
+                        {/* TIP */}
 
                         <div>
 
@@ -781,10 +852,12 @@ function Payment() {
                                             }
                                         `}
                                     >
+
                                         {amount === 0
                                             ? "No Tip"
                                             : `₹${amount}`
                                         }
+
                                     </button>
 
                                 ))}
@@ -818,11 +891,61 @@ function Payment() {
                         </div>
 
 
-                        {/* Payment method */}
+                        {/* DISCOUNT */}
 
-                        <div className="
-                            mt-6
-                        ">
+                        <div className="mt-6">
+
+                            <h2 className="
+                                text-sm
+                                font-medium
+                                text-zinc-200
+                            ">
+                                Discount
+                            </h2>
+
+                            <p className="
+                                mt-1
+                                text-xs
+                                text-zinc-500
+                            ">
+                                Apply a discount to this bill
+                            </p>
+
+
+                            <div className="relative mt-3">
+
+                                <input
+                                    type="number"
+                                    min="0"
+                                    max={order.grandTotal}
+                                    value={discountInput}
+                                    onChange={handleDiscountChange}
+                                    placeholder="Discount amount"
+                                    className="
+                                        w-full
+                                        rounded-lg
+                                        border
+                                        border-zinc-700
+                                        bg-zinc-800
+                                        py-2.5
+                                        pl-3
+                                        pr-3
+                                        text-sm
+                                        text-zinc-200
+                                        outline-none
+                                        placeholder:text-zinc-600
+                                        focus:border-orange-500/50
+                                    "
+                                />
+
+                            </div>
+
+                        </div>
+
+
+                        {/* PAYMENT METHOD */}
+
+                        <div className="mt-6">
 
                             <h2 className="
                                 text-sm
@@ -839,9 +962,6 @@ function Payment() {
                                 grid-cols-2
                                 gap-3
                             ">
-
-
-                                {/* CASH */}
 
                                 <button
                                     type="button"
@@ -876,26 +996,20 @@ function Payment() {
                                         }
                                     />
 
-                                    <div>
-
-                                        <p className={`
-                                            text-sm
-                                            font-medium
-                                            ${
-                                                paymentMethod === "CASH"
-                                                    ? "text-orange-400"
-                                                    : "text-zinc-300"
-                                            }
-                                        `}>
-                                            Cash
-                                        </p>
-
-                                    </div>
+                                    <p className={`
+                                        text-sm
+                                        font-medium
+                                        ${
+                                            paymentMethod === "CASH"
+                                                ? "text-orange-400"
+                                                : "text-zinc-300"
+                                        }
+                                    `}>
+                                        Cash
+                                    </p>
 
                                 </button>
 
-
-                                {/* ONLINE */}
 
                                 <button
                                     type="button"
@@ -948,12 +1062,9 @@ function Payment() {
                         </div>
 
 
-                        {/* Payment summary */}
+                        {/* PAYMENT SUMMARY */}
 
-                        <div className="
-                            mt-auto
-                            pt-6
-                        ">
+                        <div className="mt-6">
 
                             <div className="
                                 rounded-xl
@@ -975,6 +1086,24 @@ function Payment() {
 
                                     <span className="text-zinc-300">
                                         ₹{order.grandTotal.toFixed(2)}
+                                    </span>
+
+                                </div>
+
+
+                                <div className="
+                                    mt-2
+                                    flex
+                                    justify-between
+                                    text-sm
+                                ">
+
+                                    <span className="text-zinc-500">
+                                        Discount
+                                    </span>
+
+                                    <span className="text-green-400">
+                                        - ₹{discount.toFixed(2)}
                                     </span>
 
                                 </div>
@@ -1028,7 +1157,7 @@ function Payment() {
                             </div>
 
 
-                            {/* Error */}
+                            {/* ERROR */}
 
                             {error && (
 
@@ -1049,7 +1178,7 @@ function Payment() {
                             )}
 
 
-                            {/* Complete button */}
+                            {/* COMPLETE */}
 
                             <button
                                 type="button"

@@ -1083,9 +1083,6 @@ function OrderDetails() {
                             items-center
                             justify-center
                             rounded-lg
-                            border
-                            border-zinc-700
-                            bg-zinc-950
                             text-zinc-400
                             transition
                             hover:bg-zinc-900
@@ -1247,39 +1244,6 @@ function OrderDetails() {
                                     ? "Requesting..."
                                     : "Request Bill"
                                 }
-
-                            </button>
-
-                        )}
-
-
-                    {/* Complete Payment */}
-
-                    {["admin", "waiter", "cashier"].includes(user?.role) &&
-                        order.status === "PAYMENT_PENDING" && (
-
-                            <button
-                                onClick={() => navigate(`/orders/${orderId}/payment`)}
-                                className="
-                                    flex
-                                    items-center
-                                    gap-2
-                                    rounded-lg
-                                    bg-teal-700
-                                    px-4
-                                    py-2.5
-                                    text-sm
-                                    font-semibold
-                                    text-white
-                                    transition
-                                    hover:bg-teal-800
-                                    cursor-pointer
-                                "
-                            >
-
-                                <MdAttachMoney  size={18} />
-
-                                Complete Payment
 
                             </button>
 

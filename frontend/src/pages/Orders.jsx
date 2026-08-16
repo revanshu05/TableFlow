@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 import { IoReceiptOutline } from "react-icons/io5";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiCheckCircle } from "react-icons/fi";
+import { LuClock3 } from "react-icons/lu";
+import { MdOutlinePayment } from "react-icons/md";
 
 import OrderCard from "../components/Orders/OrderCard";
 import Modal from "../components/shared/Modal";
@@ -22,7 +24,7 @@ function Orders() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    const [filter, setFilter] = useState("ALL");
+    const [filter, setFilter] = useState("OPEN");
     const [showCreateModal, setShowCreateModal] = useState(false);
 
 
@@ -212,10 +214,13 @@ function Orders() {
                     <button
                         onClick={() => setFilter("ALL")}
                         className={`
+                            flex
+                            items-center
+                            gap-2
                             rounded-lg
-                            px-4
+                            px-3
                             py-2
-                            text-sm
+                            text-xs
                             transition-all
                             duration-200
 
@@ -235,10 +240,13 @@ function Orders() {
                     <button
                         onClick={() => setFilter("OPEN")}
                         className={`
+                            flex
+                            items-center
+                            gap-2
                             rounded-lg
-                            px-4
+                            px-3
                             py-2
-                            text-sm
+                            text-xs
                             transition-all
                             duration-200
 
@@ -249,6 +257,7 @@ function Orders() {
                             }
                         `}
                     >
+                        <LuClock3 size={14}/>
                         Open
                     </button>
 
@@ -258,10 +267,13 @@ function Orders() {
                     <button
                         onClick={() => setFilter("PAYMENT_PENDING")}
                         className={`
+                            flex
+                            items-center
+                            gap-2
                             rounded-lg
-                            px-4
+                            px-3
                             py-2
-                            text-sm
+                            text-xs
                             transition-all
                             duration-200
 
@@ -272,6 +284,7 @@ function Orders() {
                             }
                         `}
                     >
+                        <MdOutlinePayment size={14}/>
                         Payment Pending
                     </button>
 
@@ -281,10 +294,13 @@ function Orders() {
                     <button
                         onClick={() => setFilter("COMPLETED")}
                         className={`
+                            flex
+                            items-center
+                            gap-2
                             rounded-lg
-                            px-4
+                            px-3
                             py-2
-                            text-sm
+                            text-xs
                             transition-all
                             duration-200
 
@@ -295,6 +311,7 @@ function Orders() {
                             }
                         `}
                     >
+                        <FiCheckCircle size={14}/>
                         Completed
                     </button>
 

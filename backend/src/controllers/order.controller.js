@@ -106,7 +106,7 @@ const getOrders = asyncHandler(async (req, res) => {
 
     if(user.role === "admin"){
         orders = await Order.find()
-            .select("_id table customer waiter kotCount subtotal tax discount grandTotal status paymentStatus createdAt")
+            .select("_id orderNumber table customer waiter kotCount subtotal tax discount grandTotal status paymentStatus createdAt")
             .populate("table", "tableNo")
             .populate("waiter", "name")
             .sort({ createdAt: -1})
@@ -116,19 +116,21 @@ const getOrders = asyncHandler(async (req, res) => {
         orders = await Order.find({
             waiter: req.user._id,
         })
-            .select("_id table customer status kotCount grandTotal createdAt")
+            .select("_id orderNumber table customer status kotCount grandTotal createdAt")
             .populate("table", "tableNo")
             .sort({ createdAt: 1})
             .lean();
     }
     else if(user.role === "cashier"){
         orders = await Order.find({
-            status: "PAYMENT_PENDING"
+            status: {
+                $in: ["PAYMENT_PENDING", "COMPLETED"]
+            }
         })
-            .select("_id table customer waiter kotCount subtotal tax discount grandTotal status paymentStatus createdAt")
+            .select("_id orderNumber table customer waiter kotCount subtotal tax discount grandTotal status paymentStatus createdAt")
             .populate("table", "tableNo")
             .populate("waiter", "name")
-            .sort({ createdAt: 1})
+            .sort({ createdAt: -1})
             .lean();
     }
     else{

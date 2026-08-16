@@ -58,7 +58,9 @@ const KitchenTicketCard = ({ ticket, onStatusChange }) => {
     const action = getAction();
 
     return (
-        <div className="mx-auto w-full max-w-[360px] rounded-xl border border-white/5 bg-[#18181b] p-3.5 transition hover:border-white/10">
+        <div className="mx-auto w-full max-w-90 rounded-xl border border-white/5 
+        bg-[#18181b] p-3.5 transition 
+        hover:border-orange-500/40 hover:shadow-[0_10px_35px_rgba(249,115,22,0.12)]">
 
             {/* KOT Header */}
             <div className="flex items-center justify-between">
@@ -149,7 +151,10 @@ const KitchenTicketCard = ({ ticket, onStatusChange }) => {
                             action.action
                         )
                     }
-                    className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-cyan-600 py-2 text-xs font-semibold text-white transition hover:bg-cyan-700 active:scale-[0.99]"
+                    className="mt-3 flex w-full items-center justify-center 
+                    gap-2 rounded-lg bg-cyan-600 py-2 text-xs 
+                    font-semibold text-white transition 
+                    hover:bg-cyan-700 active:scale-[0.99] cursor-pointer"
                 >
                     {action.icon}
                     {action.label}
