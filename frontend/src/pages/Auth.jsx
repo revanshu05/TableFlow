@@ -55,7 +55,7 @@ function Auth() {
                     break;
 
                 case "cashier":
-                    navigate("/orders");
+                    navigate("/billing");
                     break;
 
                 case "kitchen":

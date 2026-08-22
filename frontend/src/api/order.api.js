@@ -4,9 +4,17 @@ const createOrder = (orderData) => {
     return api.post("/orders", orderData);
 }
 
-const getOrders = () => {
-    return api.get("/orders");
-}
+const getOrders = (options = {}) => {
+    const params = {};
+
+    if (options.status && options.status !== "ALL") {
+        params.status = options.status;
+    }
+
+    return api.get("/orders", {
+        params
+    });
+};
 
 const createKitchenTicket = (orderId, items) => {
     return api.post(`/orders/${orderId}/create-ticket`, 

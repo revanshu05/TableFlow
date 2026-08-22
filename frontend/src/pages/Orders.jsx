@@ -24,9 +24,16 @@ function Orders() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    const [filter, setFilter] = useState("OPEN");
+    const [filter, setFilter] = useState(null);
     const [showCreateModal, setShowCreateModal] = useState(false);
 
+    useEffect(() => {
+        if(!user) return;
+
+        if(user.role === "admin") setFilter("ALL");
+        else if(user.role === "waiter") setFilter("OPEN");
+
+    }, [user]);
 
     useEffect(() => {
 
@@ -37,9 +44,9 @@ function Orders() {
                 setLoading(true);
                 setError("");
 
-                const response = await getOrders();
-
-                console.log("Orders response:", response.data);
+                const response = await getOrders({
+                    status: filter,
+                });
 
                 setOrders(response.data.data || []);
 
@@ -63,72 +70,19 @@ function Orders() {
 
         fetchOrders();
 
-    }, []);
+    }, [filter]);
 
 
-    /* =========================================
-       ROLE BASED FILTERING
-    ========================================= */
 
-    const roleFilteredOrders = orders.filter((order) => {
-
-        if (user?.role === "waiter") {
-
-            return (
-                order.status === "OPEN" ||
-                order.status === "PAYMENT_PENDING"
-            );
-
-        }
-
-        if (user?.role === "cashier") {
-
-            return (
-                order.status === "PAYMENT_PENDING" ||
-                order.status === "COMPLETED"
-            );
-
-        }
-
-        if (user?.role === "admin") {
-            return true;
-        }
-
-        return false;
-
-    });
-
-
-    /* =========================================
-       STATUS FILTER
-    ========================================= */
-
-    const filteredOrders = roleFilteredOrders.filter((order) => {
-
-        if (filter === "ALL") {
-            return true;
-        }
-
-        return order.status === filter;
-
-    });
-
-
-    /* =========================================
-       HANDLERS
-    ========================================= */
+    /* HANDLERS */
 
     const handleOrderClick = (orderId) => {
-
         navigate(`/orders/${orderId}`);
-
     };
 
 
     const handleCreateOrderClose = () => {
-
         setShowCreateModal(false);
-
     };
 
 
@@ -236,7 +190,6 @@ function Orders() {
 
 
                     {/* OPEN */}
-
                     <button
                         onClick={() => setFilter("OPEN")}
                         className={`
@@ -260,7 +213,6 @@ function Orders() {
                         <LuClock3 size={14}/>
                         Open
                     </button>
-
 
                     {/* PAYMENT PENDING */}
 
@@ -388,7 +340,7 @@ function Orders() {
 
                 {!loading &&
                     !error &&
-                    filteredOrders.length > 0 && (
+                    orders.length > 0 && (
 
                         <div
                             className="
@@ -401,7 +353,7 @@ function Orders() {
                             "
                         >
 
-                            {filteredOrders.map((order) => (
+                            {orders.map((order) => (
 
                                 <div
                                     key={order._id}
@@ -428,7 +380,7 @@ function Orders() {
 
                 {!loading &&
                     !error &&
-                    filteredOrders.length === 0 && (
+                    orders.length === 0 && (
 
                         <div
                             className="

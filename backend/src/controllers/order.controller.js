@@ -101,44 +101,94 @@ const createOrder = asyncHandler(async (req, res) => {
 
 const getOrders = asyncHandler(async (req, res) => {
     const user = req.user;
+    const { status } = req.query;
+
+    const allowedStatus = [
+        "OPEN",
+        "PAYMENT_PENDING",
+        "COMPLETED"
+    ];
+
+    if(status && !allowedStatus.includes(status)){
+        throw new ApiError(400, "Invalid order status");
+    }
 
     let orders;
 
     if(user.role === "admin"){
-        orders = await Order.find()
+
+        const query = {};
+
+        if(status){
+            query.status = status;
+        }
+
+        orders = await Order.find(query)
             .select("_id orderNumber table customer waiter kotCount subtotal tax discount grandTotal status paymentStatus createdAt")
             .populate("table", "tableNo")
             .populate("waiter", "name")
-            .sort({ createdAt: -1})
+            .sort({ createdAt: -1 })
             .lean();
     }
+
     else if(user.role === "waiter"){
-        orders = await Order.find({
-            waiter: req.user._id,
-        })
+
+        const query = {
+            waiter: user._id
+        };
+
+        if(status){
+            query.status = status;
+        }
+
+        orders = await Order.find(query)
             .select("_id orderNumber table customer status kotCount grandTotal createdAt")
             .populate("table", "tableNo")
-            .sort({ createdAt: 1})
+            .sort({ createdAt: 1 })
             .lean();
+
     }
+
     else if(user.role === "cashier"){
-        orders = await Order.find({
+
+        const allowedCashierStatuses = [
+            "PAYMENT_PENDING",
+            "COMPLETED"
+        ];
+
+        if(status && !allowedCashierStatuses.includes(status)){
+            throw new ApiError( 
+                400, "Cashier can only access payment pending or completed orders"
+            );
+        }
+
+        const query = {
             status: {
-                $in: ["PAYMENT_PENDING", "COMPLETED"]
+                $in: status
+                    ? [status]
+                    : allowedCashierStatuses
             }
-        })
+        };
+
+        orders = await Order.find(query)
             .select("_id orderNumber table customer waiter kotCount subtotal tax discount grandTotal status paymentStatus createdAt")
             .populate("table", "tableNo")
             .populate("waiter", "name")
-            .sort({ createdAt: -1})
+            .sort({ createdAt: -1 })
             .lean();
+
     }
+
     else{
         throw new ApiError(403, "Unauthorized");
     }
 
     return res.status(200).json(
-        new ApiResponse(200, orders, "Orders fetched successfully")
+        new ApiResponse(
+            200,
+            orders,
+            "Orders fetched successfully"
+        )
     );
 });
 
