@@ -20,29 +20,31 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Name, email and password are required");
     }
 
+    const allowedRoles = ["admin", "waiter", "cashier", "kitchen"];
+    if (role && !allowedRoles.includes(role)) {
+        throw new ApiError(400, `Invalid role. Allowed: ${allowedRoles.join(", ")}`);
+    }
 
+    const normalizedEmail = email.trim().toLowerCase();
     const existingUser = await User.findOne({
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
     });
 
     if (existingUser) {
-        throw new ApiError(409, "User already exists");
+        throw new ApiError(409, "User with this email already exists");
     }
-
 
     const user = await User.create({
         name: name.trim(),
-        email: email.trim().toLowerCase(),
+        email: normalizedEmail,
         password,
-        phone: phone?.trim(),
-        role,
+        phone: phone?.trim() || "",
+        role: role || "waiter",
     });
 
-
-    const createdUser = await User
-        .findById(user._id)
-        .select("-password -refreshToken");
-
+    const createdUser = user.toObject();
+    delete createdUser.password;
+    delete createdUser.refreshToken;
 
     return res
         .status(201)
@@ -51,16 +53,13 @@ const registerUser = asyncHandler(async (req, res) => {
         );
 });
 
-
 const getCurrentUser = asyncHandler(async (req, res) => {
     return res.status(200).json(
         new ApiResponse(200, req.user, "Current user fetched successfully")
     );
 });
 
-
 const getTeamMembers = asyncHandler(async (req, res) => {
-
     const users = await User.find()
         .select("-password -refreshToken")
         .sort({ createdAt: 1 })
@@ -71,9 +70,7 @@ const getTeamMembers = asyncHandler(async (req, res) => {
     );
 });
 
-
 const updateTeamMember = asyncHandler(async (req, res) => {
-
     const { userId } = req.params;
 
     const {
@@ -83,14 +80,13 @@ const updateTeamMember = asyncHandler(async (req, res) => {
         active,
     } = req.body;
 
-
     if (!Types.ObjectId.isValid(userId)) {
         throw new ApiError(400, "Invalid user ID");
     }
 
     const user = await User.findById(userId);
 
-    if(!user) {
+    if(!user){
         throw new ApiError(404, "Team member not found");
     }
 
@@ -107,11 +103,8 @@ const updateTeamMember = asyncHandler(async (req, res) => {
             "kitchen",
         ];
 
-        if(!allowedRoles.includes(role)){
-            throw new ApiError(
-                400,
-                "Invalid role"
-            );
+        if (!allowedRoles.includes(role)) {
+            throw new ApiError(400, `Invalid role. Allowed: ${allowedRoles.join(", ")}`);
         }
 
         user.role = role;
@@ -130,9 +123,7 @@ const updateTeamMember = asyncHandler(async (req, res) => {
         user.phone = phone.trim();
     }
 
-
     if(active !== undefined){
-
         if(typeof active !== "boolean"){
             throw new ApiError(400, "Active must be a boolean");
         }
@@ -142,14 +133,13 @@ const updateTeamMember = asyncHandler(async (req, res) => {
 
     await user.save();
 
-    const updatedUser = await User.findById(user._id)
-        .select("-password -refreshToken");
-
+    const updatedUser = user.toObject();
+    delete updatedUser.password;
+    delete updatedUser.refreshToken;
 
     return res.status(200).json(
         new ApiResponse(200, updatedUser, "Team member updated successfully")
     );
-
 });
 
 export {registerUser, getCurrentUser, getTeamMembers, updateTeamMember};

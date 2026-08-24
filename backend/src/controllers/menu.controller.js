@@ -12,38 +12,56 @@ const createMenuItem = asyncHandler(async (req, res) => {
         price,
     } = req.body;
 
-    if(!name || !category || price === undefined){
-        throw new ApiError(400, "name, category and price are required");
+    if(!name?.trim() || !category?.trim() || price === undefined){
+        throw new ApiError(400, "Name, category and price are required");
     }
 
     if(typeof price !== "number"){
-        throw new ApiError(400, "price must be a number");
+        throw new ApiError(400, "Price must be a number");
     }
 
-    if(price < 0){
-        throw new ApiError(400, "price must be greater than 0");
+    if(price <= 0){
+        throw new ApiError(400, "Price must be greater than 0");
     }
+
+    const allowedCategories = [
+        "STARTER",
+        "MAIN_COURSE",
+        "BEVERAGE",
+        "SOUP",
+        "DESSERT",
+        "PIZZA",
+        "DRINK",
+        "SALAD",
+    ];
+
+    const normalizedCategory = category.trim().toUpperCase();
+
+    if(!allowedCategories.includes(normalizedCategory)){
+        throw new ApiError(400, `Invalid category. Allowed: ${allowedCategories.join(", ")}`);
+    }
+
+    const trimmedName = name.trim();
+    const escapedName = trimmedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     const existingItem = await MenuItem.findOne({
-        name: { $regex: new RegExp(`^${name.trim()}$`, "i") },
+        name: { $regex: new RegExp(`^${escapedName}$`, "i") },
     });
 
     if(existingItem){
-        throw new ApiError(409, "Item already exists");
+        throw new ApiError(409, "Item already exists with same name");
     }
 
     const item = await MenuItem.create({
-        name: name.trim(),
-        description: description?.trim(),
-        category,
-        price,
+        name: trimmedName,
+        description: description?.trim() || "",
+        category: normalizedCategory,
+        price: Number(price.toFixed(2)),
     });
 
-    return res
-        .status(201)
-        .json(
-            new ApiResponse(201, item, "item created successfully")
-        )
+    return res.status(201).json(
+        new ApiResponse(201, item, "Item created successfully")
+    );
 });
 
 const getMenuItems = asyncHandler(async (req, res) => {
@@ -57,12 +75,16 @@ const getMenuItems = asyncHandler(async (req, res) => {
         filter.isAvailable = true;
     }
 
-    if(category){
+    if(category && category.trim().toUpperCase() !== "ALL"){
         filter.category = category.trim().toUpperCase();
     }
 
     const menuItems = await MenuItem.find(filter)
         .select("-__v")
+        .sort({
+            category: 1,
+            name: 1,
+        })
         .lean();
 
     return res.status(200).json(
@@ -81,7 +103,7 @@ const getMenuItemById = asyncHandler(async (req, res) => {
 
     const filter = {_id: id,};
 
-    if(isAdmin){
+    if (!isAdmin) {
         filter.isAvailable = true;
     }
 
@@ -90,14 +112,14 @@ const getMenuItemById = asyncHandler(async (req, res) => {
         .lean();
 
     if(!menuItem){
-        throw new ApiError(404, "menu item not found");
+        throw new ApiError(404, "Menu item not found");
     }
 
     return res
         .status(200)
         .json(
-            new ApiResponse(200, menuItem, "item fetched successfully")
-        );
+            new ApiResponse(200, menuItem, "Menu item fetched successfully")
+        )
 });
 
 const updateMenuItem = asyncHandler(async (req, res) => {
@@ -123,40 +145,57 @@ const updateMenuItem = asyncHandler(async (req, res) => {
             throw new ApiError(400, "name cannot be empty")
         }
 
+        const escaped = trimmedName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
         const existing = await MenuItem.findOne({
-            _id: { $ne: id},
-            name: {$regex: new RegExp(`^${name.trim()}$`, "i") },
+            _id: { $ne: id },
+            name: { $regex: new RegExp(`^${escaped}$`, "i") },
         });
 
         if(existing){
-            throw new ApiError(409, "another items exists with same name");
+            throw new ApiError(409, "Another item already exists with this name");
         }
 
-        updateFields.name = name.trim();
+        updateFields.name = trimmedName;
     }
 
     if(description !== undefined){
-        updateFields.description = description;
+        updateFields.description = description.trim();
     }
 
     if(category !== undefined){
-        updateFields.category = category;
+        const allowedCategories = [
+            "STARTER",
+            "MAIN_COURSE",
+            "BEVERAGE",
+            "SOUP",
+            "DESSERT",
+            "PIZZA",
+            "DRINK",
+            "SALAD",
+        ];
+        const normalizedCategory = category.trim().toUpperCase();
+
+        if (!allowedCategories.includes(normalizedCategory)) {
+            throw new ApiError(400, `Invalid category. Allowed: ${allowedCategories.join(", ")}`);
+        }
+
+        updateFields.category = normalizedCategory;
     }
 
     if(price !== undefined){
-        if(!Number.isInteger(price)){
-            throw new ApiError(400, "price must be an integer");
+        if(typeof price !== "number" || isNaN(price)){
+            throw new ApiError(400, "Price must be a valid number");
         }
 
-        if(price < 1){
-            throw new ApiError(400, "price must be greater than 0");
+        if(price <= 0){
+            throw new ApiError(400, "Price must be greater than 0");
         }
 
-        updateFields.price = price;
+        updateFields.price = Number(price.toFixed(2));
     }
 
     if(Object.keys(updateFields).length === 0){
-        throw new ApiError(400, "atleast one field is required for update");
+        throw new ApiError(400, "At least one field is required for update");
     }
 
     const updatedItem = await MenuItem.findOneAndUpdate(
@@ -171,18 +210,12 @@ const updateMenuItem = asyncHandler(async (req, res) => {
         .lean();
     
     if(!updatedItem){
-        throw new ApiError(404, "menu item now found");
+        throw new ApiError(404, "Menu item not found");
     }
 
-    return res
-        .status(200)
-        .json(
-            new ApiResponse(
-                200,
-                updatedItem,
-                "Item updated successfully"
-            )
-        );
+    return res.status(200).json(
+        new ApiResponse(200, updatedItem, "Item updated successfully")
+    );
 });
 
 const updateItemAvailability = asyncHandler(async (req, res) => {
@@ -204,10 +237,6 @@ const updateItemAvailability = asyncHandler(async (req, res) => {
 
     if(Object.keys(extra).length > 0){
         throw new ApiError(400, "Only availability can be updated through this endpoint");
-    }
-
-    if(typeof isAvailable !== "boolean"){
-        throw new ApiError(400, "'isAvailable' must be a boolean");
     }
 
     const updatedItem = await MenuItem.findOneAndUpdate(

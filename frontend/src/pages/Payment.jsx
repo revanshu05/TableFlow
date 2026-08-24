@@ -36,9 +36,7 @@ function Payment() {
     const [error, setError] = useState("");
 
 
-    /* =========================================
-       FETCH ORDER
-    ========================================= */
+    /* FETCH ORDER */
 
     useEffect(() => {
 

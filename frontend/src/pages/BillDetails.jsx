@@ -18,9 +18,7 @@ import { MdAttachMoney } from "react-icons/md";
 import { getOrderById } from "../api/order.api";
 
 
-// ============================================================
 // HELPERS
-// ============================================================
 
 const formatTime = (date) => {
 
@@ -54,9 +52,7 @@ const formatCurrency = (value) => {
 };
 
 
-// ============================================================
 // BILL RECEIPT
-// ============================================================
 
 function BillReceipt({ order }) {
 
@@ -91,9 +87,7 @@ function BillReceipt({ order }) {
             "
         >
 
-            {/* =================================================
-                RECEIPT HEADER
-            ================================================= */}
+            {/* RECEIPT HEADER */}
 
             <div
                 className="
@@ -195,9 +189,7 @@ function BillReceipt({ order }) {
             </div>
 
 
-            {/* =================================================
-                CUSTOMER / ORDER INFORMATION
-            ================================================= */}
+            {/* CUSTOMER / ORDER INFORMATION */}
 
             <div
                 className="
@@ -355,9 +347,7 @@ function BillReceipt({ order }) {
             </div>
 
 
-            {/* =================================================
-                ITEMS
-            ================================================= */}
+            {/* ITEMS */}
 
             <div className="px-6 py-6">
 
@@ -533,9 +523,7 @@ function BillReceipt({ order }) {
                 </div>
 
 
-                {/* =================================================
-                    TOTALS
-                ================================================= */}
+                {/* TOTALS */}
 
                 <div
                     className="
@@ -641,9 +629,7 @@ function BillReceipt({ order }) {
                 </div>
 
 
-                {/* =================================================
-                    PAYMENT INFORMATION
-                ================================================= */}
+                {/* PAYMENT INFORMATION */}
 
                 {isPaid && (
 
@@ -711,9 +697,7 @@ function BillReceipt({ order }) {
 }
 
 
-// ============================================================
 // PAYMENT PANEL
-// ============================================================
 
 function PaymentPanel({
     order,
@@ -965,8 +949,7 @@ function BillDetails() {
             setLoading(true);
             setError("");
 
-            const response =
-                await getOrderById(orderId);
+            const response = await getOrderById(orderId);
 
             setOrder(
                 response.data.data

@@ -1,92 +1,78 @@
 
 import asyncHandler from "../utils/asyncHandler.js";
-import ApiError from "../utils/ApiError.js";
-import ApiResponse from "../utils/ApiResponse.js";
+import ApiResponse from "../utils/apiResponse.js";
 
 import Order from "../models/order.model.js";
 import Table from "../models/table.model.js";
 
+
 const getDashboardAnalytics = asyncHandler(async (req, res) => {
     const startOfDay = new Date();
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
-    const revenuePromise = Order.aggregate([
-        {
-            $match: {
-                status: "COMPLETED",
-                paidAt: {
-                    $gte: startOfDay,
-                    $lte: endOfDay,
+    const [orderAggregation, occupiedTables, availableTables] = await Promise.all([
+        Order.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { createdAt: { $gte: startOfDay, $lte: endOfDay } },
+                        { paidAt: { $gte: startOfDay, $lte: endOfDay } },
+                    ],
                 },
             },
-        },
-        {
-            $group: {
-                _id: null,
-                todayRevenue: {
-                    $sum: "$grandTotal",
+            {
+                $facet: {
+                    revenue: [
+                        {
+                            $match: {
+                                status: "COMPLETED",
+                                paidAt: { $gte: startOfDay, $lte: endOfDay },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                todayRevenue: { $sum: "$grandTotal" },
+                            },
+                        },
+                    ],
+                    counts: [
+                        {
+                            $match: {
+                                createdAt: { $gte: startOfDay, $lte: endOfDay },
+                            },
+                        },
+                        {
+                            $group: {
+                                _id: null,
+                                todayOrders: { $sum: 1 },
+                                activeOrders: {
+                                    $sum: { $cond: [{ $eq: ["$status", "OPEN"] }, 1, 0] },
+                                },
+                                paymentPendingOrders: {
+                                    $sum: { $cond: [{ $eq: ["$status", "PAYMENT_PENDING"] }, 1, 0] },
+                                },
+                            },
+                        },
+                    ],
                 },
             },
-        },
-        {
-            $project: {
-                _id: 0,
-                todayRevenue: {$round: ["$todayRevenue", 2],}
-            }
-        }
+        ]),
+        Table.countDocuments({ status: "OCCUPIED" }),
+        Table.countDocuments({ status: "AVAILABLE" }),
     ]);
 
-    const todayOrdersPromise = Order.countDocuments({
-        createdAt: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-        },
-    });
+    const facetResults = orderAggregation[0] || {};
+    const rawRevenue = facetResults.revenue?.[0]?.todayRevenue ?? 0;
+    const counts = facetResults.counts?.[0] || {};
 
-    const activeOrdersPromise = Order.countDocuments({
-        createdAt: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-        },
-        status: "OPEN",
-    });
-
-    const paymentPendingOrdersPromise = Order.countDocuments({
-        createdAt: {
-            $gte: startOfDay,
-            $lte: endOfDay,
-        },
-        status: "PAYMENT_PENDING",
-    });
-
-    const occupiedTablesPromise = Table.countDocuments({
-        status: "OCCUPIED",
-    });
-
-    const availableTablesPromise = Table.countDocuments({
-        status: "AVAILABLE",
-    });
-
-    const [
-        revenue,
-        todayOrders,
-        activeOrders,
-        paymentPendingOrders,
-        occupiedTables,
-        availableTables,
-    ] = await Promise.all([
-        revenuePromise,
-        todayOrdersPromise,
-        activeOrdersPromise,
-        paymentPendingOrdersPromise,
-        occupiedTablesPromise,
-        availableTablesPromise,
-    ]);
-
-    const todayRevenue = revenue[0]?.todayRevenue ?? 0;
+    const todayRevenue = Number(rawRevenue.toFixed(2));
+    const todayOrders = counts.todayOrders ?? 0;
+    const activeOrders = counts.activeOrders ?? 0;
+    const paymentPendingOrders = counts.paymentPendingOrders ?? 0;
 
     return res.status(200).json(
         new ApiResponse(
@@ -103,6 +89,5 @@ const getDashboardAnalytics = asyncHandler(async (req, res) => {
         )
     );
 });
-
 
 export { getDashboardAnalytics };

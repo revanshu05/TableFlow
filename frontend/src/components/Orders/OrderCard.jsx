@@ -50,14 +50,6 @@ function OrderCard({
     const customerName = customer?.name || "Unknown Customer";
 
 
-    const formattedTime = createdAt
-        ? new Date(createdAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-          })
-        : "--";
-
-
     return (
         <div
             className="
@@ -246,8 +238,8 @@ function OrderCard({
                         Created
                     </p>
 
-                    <p className="text-sm text-zinc-300 mt-0.5">
-                        {formattedTime}
+                    <p className="text-xs text-zinc-400 mt-1">
+                        {new Date(createdAt).toLocaleString()}
                     </p>
 
                 </div>
@@ -256,7 +248,7 @@ function OrderCard({
                 {/* Total */}
                 <div className="text-right">
 
-                    <p className="text-xs text-zinc-500">
+                    <p className="text-xs text-zinc-400">
                         Order Total
                     </p>
 

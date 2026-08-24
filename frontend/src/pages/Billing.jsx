@@ -37,7 +37,7 @@ function Billing() {
 
             const response = await getOrders();
 
-            const data = response.data.data || [];
+            const data = response.data.data.orders || [];
 
             // Billing only works with these two states
             const billingOrders = data.filter(

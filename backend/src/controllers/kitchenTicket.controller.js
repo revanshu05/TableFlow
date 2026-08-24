@@ -1,8 +1,8 @@
 import mongoose, {Types} from "mongoose";
 
 import asyncHandler from "../utils/asyncHandler.js";
-import ApiError from "../utils/ApiError.js";
-import ApiResponse from "../utils/ApiResponse.js";
+import ApiError from "../utils/apiError.js";
+import ApiResponse from "../utils/apiResponse.js";
 
 import Table from "../models/table.model.js";
 import MenuItem from "../models/menu.model.js";
@@ -177,6 +177,7 @@ const createKitchenTicket = asyncHandler(async (req, res) => {
     }
 });
 
+
 const getKitchenTickets = asyncHandler(async (req, res) => {
     
     const tickets = await KitchenTicket.find({
@@ -211,6 +212,7 @@ const getKitchenTickets = asyncHandler(async (req, res) => {
         new ApiResponse(200, groupedTickets, "Kitchen tickets fetched successfully")
     );
 });
+
 
 const updateKitchenTicket = asyncHandler(async (req, res) => {
 
@@ -260,6 +262,14 @@ const updateKitchenTicket = asyncHandler(async (req, res) => {
             throw new ApiError(
                 400,
                 "Only open orders can have their KOTs edited"
+            );
+        }
+
+        const user = req.user;
+        if (user.role === "waiter" && !order.waiter.equals(user._id)) {
+            throw new ApiError(
+                403,
+                "You are not authorized to modify KOTs for this order"
             );
         }
 
@@ -511,22 +521,12 @@ const updateKitchenTicketStatus = asyncHandler(async (req, res) => {
             from: "READY",
             to: "SERVED"
         }
-    }
+    };
 
     const transition = transitions[action];
 
     if(!transition){
         throw new ApiError(400, "Invalid action");
-    }
-
-    const ticket = await KitchenTicket.findById(ticketId);
-
-    if(!ticket){
-        throw new ApiError(404, "Kitchen ticket not found");
-    }
-
-    if(ticket.status !== transition.from){
-        throw new ApiError(409, "Invalid Transition");
     }
 
     const updatedTicket = await KitchenTicket.findOneAndUpdate(
@@ -541,19 +541,23 @@ const updateKitchenTicketStatus = asyncHandler(async (req, res) => {
             new: true,
             runValidators: true,
         }
-    );
-
-    if(!updatedTicket){
-        throw new ApiError(409, "Kitchen ticket status was changed earlier by another request");
-    }
-
-    const responseTicket = await KitchenTicket.findById(updatedTicket._id)
+    )
         .select("ticketNumber table items status createdAt")
         .populate("table", "tableNo")
         .lean();
 
+    if(!updatedTicket){
+        const ticketExists = await KitchenTicket.exists({ _id: ticketId });
+
+        if (!ticketExists) {
+            throw new ApiError(404, "Kitchen ticket not found");
+        }
+
+        throw new ApiError(409, "Kitchen ticket status was changed earlier by another request or is not in valid status");
+    }
+
     return res.status(200).json(
-        new ApiResponse(200, responseTicket, `Kitchen ticket successfully marked form: ${transition.from} to: ${transition.to}`)
+        new ApiResponse(200, updatedTicket, `Kitchen ticket successfully marked from: ${transition.from} to: ${transition.to}`)
     );
 });
 

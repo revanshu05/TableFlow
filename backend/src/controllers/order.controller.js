@@ -1,8 +1,8 @@
 import mongoose, { Types } from "mongoose";
 
 import asyncHandler from "../utils/asyncHandler.js";
-import ApiError from "../utils/ApiError.js";
-import ApiResponse from "../utils/ApiResponse.js";
+import ApiError from "../utils/apiError.js";
+import ApiResponse from "../utils/apiResponse.js";
 
 import restaurantSettings from "../models/restaurantSettings.model.js";
 import Order from "../models/order.model.js";
@@ -20,10 +20,6 @@ const createOrder = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Customer name is required.");
     }
 
-    if (customer.members < 0 && customer.members > 10) {
-        throw new ApiError(400, "Members must be between 1 to 10");
-    }
-
     if (!Types.ObjectId.isValid(tableId)) {
         throw new ApiError(400, "Invalid table id.");
     }
@@ -38,70 +34,111 @@ const createOrder = asyncHandler(async (req, res) => {
         throw new ApiError(409, "Table already occupied.");
     }
 
-    const existingOrder = await Order.findOne({
-        table: tableId,
-        status: {
-            $in: [
-                "OPEN",
-                "PAYMENT_PENDING",
-            ],
-        },
-    }).lean();
+    const members = customer.members ?? 1;
 
-    if (existingOrder) {
+    if (!Number.isInteger(members) || members < 1) {
+        throw new ApiError(400, "Number of members must be at least 1.");
+    }
+
+    if (members > table.capacity) {
         throw new ApiError(
-            409,
-            "An active order already exists for this table."
+            400,
+            `This table can accommodate at most ${table.capacity} members.`
         );
     }
 
-    const settings = await restaurantSettings.findOneAndUpdate(
-        {},
-        {
-            $inc: {
-                nextOrderNumber: 1,
+    const session = await mongoose.startSession();
+
+    try {
+        session.startTransaction();
+
+        const settings = await restaurantSettings.findOneAndUpdate(
+            {},
+            {
+                $inc: {
+                    nextOrderNumber: 1,
+                },
             },
-        },
-        {
-            new: false
-        }
-    )
+            {
+                new: false,
+                session,
+            }
+        );
 
-    if(!settings){
-        throw new ApiError(500, "Restaurant settings not initialized");
+        if (!settings) {
+            throw new ApiError(500, "Restaurant settings not initialized");
+        }
+
+        const orderNumber = settings.nextOrderNumber;
+
+        const [order] = await Order.create(
+            [
+                {
+                    table: tableId,
+                    waiter: req.user._id,
+                    customer: {
+                        name: customer.name.trim(),
+                        phone: customer.phone?.trim() || "",
+                        members,
+                    },
+                    notes: notes?.trim() || "",
+                    orderNumber,
+                },
+            ],
+            { session }
+        );
+
+        const updatedTable = await Table.findOneAndUpdate(
+            {
+                _id: tableId,
+                status: "AVAILABLE",
+            },
+            {
+                status: "OCCUPIED",
+                assignedWaiter: req.user._id,
+                currentOrder: order._id,
+            },
+            {
+                session,
+                new: true,
+            }
+        );
+
+        if (!updatedTable) {
+            throw new ApiError(
+                409,
+                "Table was claimed by another order simultaneously."
+            );
+        }
+
+        await session.commitTransaction();
+
+        return res.status(201).json(
+            new ApiResponse(
+                201,
+                order,
+                "New order created successfully"
+            )
+        );
+
+    } catch (error) {
+        await session.abortTransaction();
+        throw error;
+    } finally {
+        await session.endSession();
     }
-
-    const orderNumber = settings.nextOrderNumber;
-
-    const order = await Order.create({
-        table: tableId,
-        waiter: req.user._id,
-        customer,
-        notes,
-        orderNumber,
-    });
-
-    await Table.findByIdAndUpdate(
-        tableId,
-        {
-            status: "OCCUPIED",
-            assignedWaiter: req.user._id,
-            currentOrder: order._id,
-        }
-    );
-
-    return res.status(201).json(
-        new ApiResponse(
-            201,
-            order,
-            "New order created successfully"
-        )
-    );
 });
 
 const getOrders = asyncHandler(async (req, res) => {
     const user = req.user;
-    const { status } = req.query;
+
+    const {
+        status,
+        sort = "newest",
+        page = 1,
+        limit = 15,
+    } = req.query;
+
 
     const allowedStatus = [
         "OPEN",
@@ -109,31 +146,64 @@ const getOrders = asyncHandler(async (req, res) => {
         "COMPLETED"
     ];
 
-    if(status && !allowedStatus.includes(status)){
+    if (status && !allowedStatus.includes(status)) {
         throw new ApiError(400, "Invalid order status");
     }
 
-    let orders;
+
+    const sortOptions = {
+        newest: {
+            createdAt: -1,
+            _id: -1,
+        },
+        oldest: {
+            createdAt: 1,
+            _id: 1,
+        }
+    };
+
+    if (!sortOptions[sort]) {
+        throw new ApiError(400, "Invalid sort option");
+    }
+
+    const sortQuery = sortOptions[sort];
+    const pageNumber = Number(page);
+    const limitNumber = Number(limit);
+
+    if(
+        !Number.isInteger(pageNumber) ||
+        pageNumber < 1){
+
+        throw new ApiError(400, "Invalid page number");
+    }
+
+    if(
+        !Number.isInteger(limitNumber) ||
+        limitNumber < 1 ||
+        limitNumber > 100){
+
+        throw new ApiError(
+            400,
+            "Limit must be between 1 and 100"
+        );
+    }
+
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    let query;
 
     if(user.role === "admin"){
 
-        const query = {};
+        query = {};
 
         if(status){
             query.status = status;
         }
-
-        orders = await Order.find(query)
-            .select("_id orderNumber table customer waiter kotCount subtotal tax discount grandTotal status paymentStatus createdAt")
-            .populate("table", "tableNo")
-            .populate("waiter", "name")
-            .sort({ createdAt: -1 })
-            .lean();
     }
-
     else if(user.role === "waiter"){
 
-        const query = {
+        query = {
             waiter: user._id
         };
 
@@ -141,14 +211,7 @@ const getOrders = asyncHandler(async (req, res) => {
             query.status = status;
         }
 
-        orders = await Order.find(query)
-            .select("_id orderNumber table customer status kotCount grandTotal createdAt")
-            .populate("table", "tableNo")
-            .sort({ createdAt: 1 })
-            .lean();
-
     }
-
     else if(user.role === "cashier"){
 
         const allowedCashierStatuses = [
@@ -156,13 +219,17 @@ const getOrders = asyncHandler(async (req, res) => {
             "COMPLETED"
         ];
 
-        if(status && !allowedCashierStatuses.includes(status)){
-            throw new ApiError( 
-                400, "Cashier can only access payment pending or completed orders"
+        if(
+            status &&
+            !allowedCashierStatuses.includes(status)
+        ){
+            throw new ApiError(
+                400,
+                "Cashier can only access payment pending or completed orders"
             );
         }
 
-        const query = {
+        query = {
             status: {
                 $in: status
                     ? [status]
@@ -170,23 +237,49 @@ const getOrders = asyncHandler(async (req, res) => {
             }
         };
 
-        orders = await Order.find(query)
-            .select("_id orderNumber table customer waiter kotCount subtotal tax discount grandTotal status paymentStatus createdAt")
-            .populate("table", "tableNo")
-            .populate("waiter", "name")
-            .sort({ createdAt: -1 })
-            .lean();
-
     }
-
-    else{
+    else {
         throw new ApiError(403, "Unauthorized");
     }
+
+
+    const [orders, totalOrders] = await Promise.all([
+
+        Order.find(query)
+            .select(
+                "_id orderNumber table customer waiter kotCount grandTotal status createdAt"
+            )
+            .populate("table", "tableNo")
+            .populate("waiter", "name")
+            .sort(sortQuery)
+            .skip(skip)
+            .limit(limitNumber)
+            .lean(),
+
+        Order.countDocuments(query)
+
+    ]);
+
+
+    const totalPages = Math.ceil(totalOrders / limitNumber);
+
+    const pagination = {
+        page: pageNumber,
+        limit: limitNumber,
+        totalOrders,
+        totalPages,
+        hasNextPage: pageNumber < totalPages,
+        hasPreviousPage: pageNumber > 1
+    };
+
 
     return res.status(200).json(
         new ApiResponse(
             200,
-            orders,
+            {
+                orders,
+                pagination
+            },
             "Orders fetched successfully"
         )
     );
@@ -248,9 +341,28 @@ const getOrderById = asyncHandler(async (req, res) => {
 
 const getOrderKots = asyncHandler(async (req, res) => {
     const { id } = req.params;
+    const user = req.user;
 
     if(!Types.ObjectId.isValid(id)){
         throw new ApiError(400, "Invalid order id");
+    }
+
+    let orderQuery = { _id: id };
+
+    if(user.role === "waiter"){
+        orderQuery.waiter = user._id;
+    }
+    else if(user.role === "cashier"){
+        orderQuery.status = { $in: ["PAYMENT_PENDING", "COMPLETED"] };
+    }
+    else if(user.role !== "admin"){
+        throw new ApiError(403, "Unauthorized");
+    }
+
+    const orderExists = await Order.exists(orderQuery);
+
+    if(!orderExists){
+        throw new ApiError(404, "Order not found");
     }
 
     const tickets = await KitchenTicket.find({
@@ -291,6 +403,10 @@ const requestBill = asyncHandler(async (req, res) => {
         throw new ApiError(409, "Order status must be OPEN to request bill");
     }
 
+    if(order.kotCount === 0 || order.items.length === 0){
+        throw new ApiError(400, "Cannot request bill for empty order");
+    }
+
     const pendingTicket = await KitchenTicket.findOne({
         order: order._id,
         status: {
@@ -307,22 +423,20 @@ const requestBill = asyncHandler(async (req, res) => {
 
     await order.save();
 
-    const updatedOrder = await Order.findById(order._id)
-        .populate("waiter", "name")
-        .populate("table", "tableNo")
-        .lean();
+    await Order.populate([
+        {path: "waiter", select: "name"},
+        {path: "table", select: "tableNo"}
+    ]);
 
     return res.status(200).json(
-        new ApiResponse(200, updatedOrder, "Bill requested successfully")
+        new ApiResponse(200, order, "Bill requested successfully")
     )
 });
 
 const completePayment = asyncHandler(async (req, res) => {
     const { id } = req.params;
     const user = req.user;
-    let { paymentMethod, tip } = req.body;
-    
-    tip = tip ?? 0;
+    let { paymentMethod, tip = 0, discount = 0 } = req.body;
 
     if(!Types.ObjectId.isValid(id)){
         throw new ApiError(400, "Invalid order id");
@@ -340,6 +454,10 @@ const completePayment = asyncHandler(async (req, res) => {
         throw new ApiError(400, "Tip must be non negative number");
     }
 
+    if(typeof discount !== "number" || discount < 0){
+        throw new ApiError(400, "Discount must be a non-negative number");
+    }
+
     const session = await mongoose.startSession();
 
     try {
@@ -351,14 +469,24 @@ const completePayment = asyncHandler(async (req, res) => {
             throw new ApiError(404, "Order not found");
         }
 
+        if(user.role === "waiter" && !order.waiter.equals(user._id)){
+            throw new ApiError(403, "Not authorized to complete payment for this order");
+        }
+
         if(order.status !== "PAYMENT_PENDING"){
             throw new ApiError(409, "Order status must be PAYMENT_PENDING to complete payment")
+        }
+
+        if(discount > (order.subtotal + order.tax)){
+            throw new ApiError(400, "Discount cannot exceed the total bill amount");
         }
 
         order.status = "COMPLETED";
         order.paymentStatus = "PAID";
         order.paymentMethod = paymentMethod;
         order.tip = tip;
+        order.discount = discount;
+        order.grandTotal = Math.max(0, order.subtotal + order.tax - discount);
         order.paidAt = new Date();
 
         const table = await Table.findById(order.table).session(session);
@@ -376,13 +504,13 @@ const completePayment = asyncHandler(async (req, res) => {
 
         await session.commitTransaction();
 
-        const updatedOrder = await Order.findById(order._id)
-            .populate("table", "tableNo")
-            .populate("waiter", "name")
-            .lean();
+        await order.populate([
+            {path: "table", select: "tableNo"},
+            {path: "waiter", select: "name"}
+        ]);
 
         return res.status(200).json(
-            new ApiResponse(200, updatedOrder, "Payment completed successfully")
+            new ApiResponse(200, order, "Payment completed successfully")
         );
 
     } catch (error) {
@@ -412,7 +540,9 @@ const getBill = asyncHandler(async (req, res) => {
     }
     
     if(user.role === "waiter"){
-        if(order.waiter._id !== user._id) throw new ApiError(403, "Not authorized");
+        if(!order.waiter?._id?.equals(user._id)){
+            throw new ApiError(403, "Not authorized to view bill for this order");
+        }
     }
 
     if(!["COMPLETED", "PAYMENT_PENDING"].includes(order.status)){
@@ -421,12 +551,12 @@ const getBill = asyncHandler(async (req, res) => {
 
     const bill = {
         orderNumber: order.orderNumber,
-        tableNo: order.table?.tableNo,
-        waiterName: order.waiter?.name,
-        customerName: order.customer.name,
-        customerPhone: order.customer.phone,
-        members: order.customer.members,
-        orderedItems: order.items,
+        tableNo: order.table?.tableNo || "N/A",
+        waiterName: order.waiter?.name || "N/A",
+        customerName: order.customer?.name || "",
+        customerPhone: order.customer?.phone || "",
+        members: order.customer?.members || 1,
+        orderedItems: order.items || [],
         subtotal: order.subtotal,
         tax: order.tax,
         discount: order.discount,

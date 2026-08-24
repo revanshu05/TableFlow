@@ -11,32 +11,26 @@ const cookieOptions = {
     sameSite: "strict",
 };
 
-const generateAccessAndRefreshTokens = async (userId) => {
-    const user = await User.findById(userId);
-
-    if(!user) throw new ApiError(404, "User not found");
-
+const generateTokensForUser = async (user) => {
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
+    await user.save({ validateBeforeSave: false });
 
-    await user.save({validateBeforeSave: false});
-
-    return {accessToken, refreshToken};
+    return { accessToken, refreshToken };
 };
 
 
 const loginUser = asyncHandler(async (req, res) => {
     const {email, password} = req.body;
 
-    if([email, password].some(
-        (field) => !field?.trim()
-    )){
+    if(!email?.trim() || !password){
         throw new ApiError(400, "Email and password are required");
     }
 
-    const user = await User.findOne({email});
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
 
     if(!user){
         throw new ApiError(401, "Invalid email or password");
@@ -52,11 +46,13 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(403, "Your account is inactive. Please contact the administrator.");
     }
 
-    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id);
+    const { accessToken, refreshToken } = await generateTokensForUser(user);
 
-    const loggedInUser = await User.findById(user._id).select("-password -refreshToken");
+    const loggedInUser = user.toObject();
+    delete loggedInUser.password;
+    delete loggedInUser.refreshToken;
 
-    res
+    return res
         .status(200)
         .cookie("accessToken", accessToken, cookieOptions)
         .cookie("refreshToken", refreshToken, cookieOptions)
@@ -65,6 +61,7 @@ const loginUser = asyncHandler(async (req, res) => {
         );
 });
 
+
 const logoutUser = asyncHandler(async (req, res) => {
     
     await User.findByIdAndUpdate(
@@ -72,15 +69,12 @@ const logoutUser = asyncHandler(async (req, res) => {
         {
             $unset: {refreshToken: 1},
         }
-    )
+    );
 
-    res
-        .clearCookie("accessToken", cookieOptions)
-        .clearCookie("refreshToken", cookieOptions);
-
-    
     return res
         .status(200)
+        .clearCookie("accessToken", cookieOptions)
+        .clearCookie("refreshToken", cookieOptions)
         .json(
             new ApiResponse(200, {}, "User logged out successfully")
         );
@@ -102,26 +96,21 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             oldRefreshToken, 
             process.env.REFRESH_TOKEN_SECRET
         );
-
     } catch (error) {
-        console.error(error);
-        throw new ApiError(401, "invalid or expired refresh token");
+        throw new ApiError(401, "Invalid or expired refresh token");
     }
 
-    const user = await User.findById(decodedToken._id)
-        .select("-password");
+    const user = await User.findById(decodedToken._id).select("-password");
 
     if(!user){
-        throw new ApiError(401, "invalid refresh token");
+        throw new ApiError(401, "Invalid refresh token");
     }
 
     if(oldRefreshToken !== user.refreshToken){
-        throw new ApiError(401, "invalid refresh token");
+        throw new ApiError(401, "Invalid refresh token");
     }
 
-    console.log(req.cookies);
-
-    const {accessToken, refreshToken} = await generateAccessAndRefreshTokens(user._id);
+    const { accessToken, refreshToken } = await generateTokensForUser(user);
 
     return res
         .status(200)

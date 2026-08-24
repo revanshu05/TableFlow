@@ -20,22 +20,45 @@ function Orders() {
 
     const user = useSelector((state) => state.auth.user);
 
+
     const [orders, setOrders] = useState([]);
+    const [pagination, setPagination] = useState(null);
+
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     const [filter, setFilter] = useState(null);
+    const [sort, setSort] = useState("newest");
+
+    const [page, setPage] = useState(1);
+
+    const limit = 15;
+
     const [showCreateModal, setShowCreateModal] = useState(false);
 
-    useEffect(() => {
-        if(!user) return;
 
-        if(user.role === "admin") setFilter("ALL");
-        else if(user.role === "waiter") setFilter("OPEN");
+    // SET DEFAULT FILTER
+
+    useEffect(() => {
+
+        if (!user) return;
+
+        if (user.role === "admin") {
+            setFilter("ALL");
+        }
+        else if (user.role === "waiter") {
+            setFilter("OPEN");
+        }
 
     }, [user]);
 
+
+    // FETCH ORDERS
+
     useEffect(() => {
+
+        if (!filter) return;
+
 
         const fetchOrders = async () => {
 
@@ -46,20 +69,31 @@ function Orders() {
 
                 const response = await getOrders({
                     status: filter,
+                    sort,
+                    page,
+                    limit
                 });
 
-                setOrders(response.data.data || []);
+                const data = response.data.data;
 
-            } catch (error) {
+                setOrders(data.orders || []);
+                setPagination(data.pagination || null);
 
-                console.error("Failed to fetch orders:", error);
+            }
+            catch (error) {
+
+                console.error(
+                    "Failed to fetch orders:",
+                    error
+                );
 
                 setError(
                     error.response?.data?.message ||
                     "Failed to load orders"
                 );
 
-            } finally {
+            }
+            finally {
 
                 setLoading(false);
 
@@ -70,14 +104,47 @@ function Orders() {
 
         fetchOrders();
 
-    }, [filter]);
+    }, [filter, sort, page]);
 
 
-
-    /* HANDLERS */
+    // HANDLERS
 
     const handleOrderClick = (orderId) => {
         navigate(`/orders/${orderId}`);
+    };
+
+
+    const handleFilterChange = (newFilter) => {
+
+        setFilter(newFilter);
+        setPage(1);
+
+    };
+
+
+    const handleSortChange = (newSort) => {
+
+        setSort(newSort);
+        setPage(1);
+
+    };
+
+
+    const handlePreviousPage = () => {
+
+        if(pagination?.hasPreviousPage){
+            setPage((prev) => prev - 1);
+        }
+
+    };
+
+
+    const handleNextPage = () => {
+
+        if(pagination?.hasNextPage){
+            setPage((prev) => prev + 1);
+        }
+
     };
 
 
@@ -87,7 +154,6 @@ function Orders() {
 
 
     return (
-
         <section
             className="
                 flex
@@ -126,12 +192,10 @@ function Orders() {
                             bg-orange-500/10
                         "
                     >
-
                         <IoReceiptOutline
                             size={20}
                             className="text-orange-400"
                         />
-
                     </div>
 
 
@@ -148,124 +212,210 @@ function Orders() {
                 </div>
 
 
-                {/* RIGHT - STATUS FILTERS */}
+                {/* RIGHT - SORT + STATUS FILTERS */}
 
-                <div
-                    className="
-                        flex
-                        items-center
-                        gap-1
-                        rounded-xl
-                        border
-                        border-zinc-700
-                        bg-zinc-900
-                        p-1
-                    "
-                >
+                <div className="flex items-center gap-3">
 
-                    {/* ALL */}
 
-                    <button
-                        onClick={() => setFilter("ALL")}
-                        className={`
+                    {/* SORT SELECTOR */}
+
+                    <div
+                        className="
                             flex
                             items-center
-                            gap-2
-                            rounded-lg
-                            px-3
-                            py-2
-                            text-xs
-                            transition-all
-                            duration-200
-
-                            ${
-                                filter === "ALL"
-                                    ? "bg-zinc-700 text-white"
-                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                            }
-                        `}
+                            gap-1
+                            rounded-xl
+                            border
+                            border-zinc-700
+                            bg-zinc-900
+                            p-1
+                        "
                     >
-                        All
-                    </button>
+
+                        {/* NEWEST */}
+
+                        <button
+                            onClick={() =>
+                                handleSortChange("newest")
+                            }
+                            className={`
+                                rounded-lg
+                                px-3
+                                py-2
+                                text-xs
+                                transition-all
+                                duration-200
+
+                                ${
+                                    sort === "newest"
+                                        ? "bg-zinc-700 text-white"
+                                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                                }
+                            `}
+                        >
+                            Newest
+                        </button>
 
 
-                    {/* OPEN */}
-                    <button
-                        onClick={() => setFilter("OPEN")}
-                        className={`
+                        {/* OLDEST */}
+
+                        <button
+                            onClick={() =>
+                                handleSortChange("oldest")
+                            }
+                            className={`
+                                rounded-lg
+                                px-3
+                                py-2
+                                text-xs
+                                transition-all
+                                duration-200
+
+                                ${
+                                    sort === "oldest"
+                                        ? "bg-zinc-700 text-white"
+                                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                                }
+                            `}
+                        >
+                            Oldest
+                        </button>
+
+                    </div>
+
+
+                    {/* STATUS FILTERS */}
+
+                    <div
+                        className="
                             flex
                             items-center
-                            gap-2
-                            rounded-lg
-                            px-3
-                            py-2
-                            text-xs
-                            transition-all
-                            duration-200
-
-                            ${
-                                filter === "OPEN"
-                                    ? "bg-orange-500/20 text-orange-400"
-                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                            }
-                        `}
+                            gap-1
+                            rounded-xl
+                            border
+                            border-zinc-700
+                            bg-zinc-900
+                            p-1
+                        "
                     >
-                        <LuClock3 size={14}/>
-                        Open
-                    </button>
 
-                    {/* PAYMENT PENDING */}
+                        {/* ALL */}
 
-                    <button
-                        onClick={() => setFilter("PAYMENT_PENDING")}
-                        className={`
-                            flex
-                            items-center
-                            gap-2
-                            rounded-lg
-                            px-3
-                            py-2
-                            text-xs
-                            transition-all
-                            duration-200
-
-                            ${
-                                filter === "PAYMENT_PENDING"
-                                    ? "bg-blue-500/15 text-blue-400"
-                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                        <button
+                            onClick={() =>
+                                handleFilterChange("ALL")
                             }
-                        `}
-                    >
-                        <MdOutlinePayment size={14}/>
-                        Payment Pending
-                    </button>
+                            className={`
+                                flex
+                                items-center
+                                gap-2
+                                rounded-lg
+                                px-3
+                                py-2
+                                text-xs
+                                transition-all
+                                duration-200
+
+                                ${
+                                    filter === "ALL"
+                                        ? "bg-zinc-700 text-white"
+                                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                                }
+                            `}
+                        >
+                            All
+                        </button>
 
 
-                    {/* COMPLETED */}
+                        {/* OPEN */}
 
-                    <button
-                        onClick={() => setFilter("COMPLETED")}
-                        className={`
-                            flex
-                            items-center
-                            gap-2
-                            rounded-lg
-                            px-3
-                            py-2
-                            text-xs
-                            transition-all
-                            duration-200
-
-                            ${
-                                filter === "COMPLETED"
-                                    ? "bg-green-500/20 text-green-400"
-                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                        <button
+                            onClick={() =>
+                                handleFilterChange("OPEN")
                             }
-                        `}
-                    >
-                        <FiCheckCircle size={14}/>
-                        Completed
-                    </button>
+                            className={`
+                                flex
+                                items-center
+                                gap-2
+                                rounded-lg
+                                px-3
+                                py-2
+                                text-xs
+                                transition-all
+                                duration-200
+
+                                ${
+                                    filter === "OPEN"
+                                        ? "bg-orange-500/20 text-orange-400"
+                                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                                }
+                            `}
+                        >
+                            <LuClock3 size={14} />
+                            Open
+                        </button>
+
+
+                        {/* PAYMENT PENDING */}
+
+                        <button
+                            onClick={() =>
+                                handleFilterChange(
+                                    "PAYMENT_PENDING"
+                                )
+                            }
+                            className={`
+                                flex
+                                items-center
+                                gap-2
+                                rounded-lg
+                                px-3
+                                py-2
+                                text-xs
+                                transition-all
+                                duration-200
+
+                                ${
+                                    filter === "PAYMENT_PENDING"
+                                        ? "bg-blue-500/15 text-blue-400"
+                                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                                }
+                            `}
+                        >
+                            <MdOutlinePayment size={14} />
+                            Payment Pending
+                        </button>
+
+
+                        {/* COMPLETED */}
+
+                        <button
+                            onClick={() =>
+                                handleFilterChange("COMPLETED")
+                            }
+                            className={`
+                                flex
+                                items-center
+                                gap-2
+                                rounded-lg
+                                px-3
+                                py-2
+                                text-xs
+                                transition-all
+                                duration-200
+
+                                ${
+                                    filter === "COMPLETED"
+                                        ? "bg-green-500/20 text-green-400"
+                                        : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                                }
+                            `}
+                        >
+                            <FiCheckCircle size={14} />
+                            Completed
+                        </button>
+
+                    </div>
 
                 </div>
 
@@ -347,7 +497,7 @@ function Orders() {
                                 grid
                                 grid-cols-1
                                 gap-5
-                                pb-20
+                                pb-6
                                 md:grid-cols-2
                                 xl:grid-cols-3
                             "
@@ -358,7 +508,9 @@ function Orders() {
                                 <div
                                     key={order._id}
                                     onClick={() =>
-                                        handleOrderClick(order._id)
+                                        handleOrderClick(
+                                            order._id
+                                        )
                                     }
                                     className="cursor-pointer"
                                 >
@@ -412,6 +564,124 @@ function Orders() {
 
                     )}
 
+
+                {/* PAGINATION */}
+
+                {!loading &&
+                    !error &&
+                    pagination &&
+                    pagination.totalPages > 0 && (
+
+                        <div
+                            className="
+                                flex
+                                items-center
+                                justify-between
+                                border-t
+                                border-zinc-700
+                                px-2
+                                py-4
+                            "
+                        >
+
+                            {/* PAGE INFORMATION */}
+
+                            <p
+                                className="
+                                    text-xs
+                                    text-zinc-500
+                                "
+                            >
+                                Page{" "}
+                                <span className="text-zinc-300">
+                                    {pagination.page}
+                                </span>{" "}
+                                of{" "}
+                                <span className="text-zinc-300">
+                                    {pagination.totalPages}
+                                </span>
+                            </p>
+
+
+                            {/* PAGINATION CONTROLS */}
+
+                            <div
+                                className="
+                                    flex
+                                    items-center
+                                    gap-2
+                                "
+                            >
+
+                                {/* PREVIOUS */}
+
+                                <button
+                                    disabled={!pagination.hasPreviousPage}
+                                    onClick={handlePreviousPage}
+                                    className="
+                                        rounded-lg
+                                        border
+                                        border-zinc-700
+                                        bg-zinc-900
+                                        px-3
+                                        py-2
+                                        text-xs
+                                        text-zinc-300
+                                        transition
+                                        hover:bg-zinc-700
+                                        disabled:cursor-not-allowed
+                                        disabled:opacity-40
+                                    "
+                                >
+                                    Previous
+                                </button>
+
+
+                                {/* CURRENT PAGE */}
+
+                                <span
+                                    className="
+                                        rounded-lg
+                                        bg-zinc-700
+                                        px-3
+                                        py-2
+                                        text-xs
+                                        text-white
+                                    "
+                                >
+                                    {pagination.page}
+                                </span>
+
+
+                                {/* NEXT */}
+
+                                <button
+                                    disabled={!pagination.hasNextPage}
+                                    onClick={handleNextPage}
+                                    className="
+                                        rounded-lg
+                                        border
+                                        border-zinc-700
+                                        bg-zinc-900
+                                        px-3
+                                        py-2
+                                        text-xs
+                                        text-zinc-300
+                                        transition
+                                        hover:bg-zinc-700
+                                        disabled:cursor-not-allowed
+                                        disabled:opacity-40
+                                    "
+                                >
+                                    Next
+                                </button>
+
+                            </div>
+
+                        </div>
+
+                    )}
+
             </div>
 
 
@@ -420,41 +690,34 @@ function Orders() {
             {["admin", "waiter"].includes(user?.role) && (
 
                 <button
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={() =>
+                        setShowCreateModal(true)
+                    }
                     className="
                         fixed
-                        bottom-10
+                        bottom-20
                         right-10
                         z-40
-
                         flex
                         h-18
                         w-18
                         items-center
                         justify-center
-
                         rounded-full
-
                         bg-orange-500
                         text-white
-
                         shadow-lg
                         shadow-orange-500/30
-
                         transition-all
                         duration-300
                         ease-out
-
                         hover:scale-110
                         hover:bg-orange-600
-
                         active:scale-95
                     "
                     title="Create Order"
                 >
-
                     <FiPlus size={40} />
-
                 </button>
 
             )}
@@ -468,17 +731,13 @@ function Orders() {
                 onClose={handleCreateOrderClose}
                 size="3xl"
             >
-
                 <CreateOrderForm
                     onClose={handleCreateOrderClose}
                 />
-
             </Modal>
 
         </section>
-
     );
-
 }
 
 

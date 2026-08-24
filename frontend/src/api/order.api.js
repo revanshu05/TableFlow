@@ -7,8 +7,20 @@ const createOrder = (orderData) => {
 const getOrders = (options = {}) => {
     const params = {};
 
-    if (options.status && options.status !== "ALL") {
+    if(options.status && options.status !== "ALL"){
         params.status = options.status;
+    }
+
+    if(options.sort){
+        params.sort = options.sort;
+    }
+
+    if(options.page){
+        params.page = options.page;
+    }
+
+    if(options.limit){
+        params.limit = options.limit;
     }
 
     return api.get("/orders", {
