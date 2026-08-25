@@ -1,6 +1,10 @@
-import express, { urlencoded } from "express";
+import express from "express";
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import pinoHttp from "pino-http";
+import logger from "./utils/logger.js"
+import requestIdMiddleware from "./middlewares/requestId.middleware.js";
+
 import userRouter from "./routes/user.routes.js";
 import errorHandler from "./middlewares/error.middleware.js";
 import authRouter from "./routes/auth.routes.js";
@@ -10,8 +14,13 @@ import orderRouter from "./routes/order.routes.js";
 import kitchenRouter from "./routes/kitchen.routes.js";
 import restaurantSettingsRouter from "./routes/restaurantSettings.routes.js";
 import analyticsRouter from "./routes/analytics.routes.js";
+import healthRouter from "./routes/health.routes.js";
 
 const app = express();
+
+app.use(requestIdMiddleware);
+
+app.use(pinoHttp({logger}));
 
 app.use(cors({
     origin: process.env.CORS_ORIGIN,
@@ -35,8 +44,8 @@ app.use("/api/v1/orders", orderRouter);
 app.use("/api/v1/kitchen-tickets", kitchenRouter);
 app.use("/api/v1/restaurant-settings", restaurantSettingsRouter);
 app.use("/api/v1/analytics", analyticsRouter);
+app.use("/api/v1/health", healthRouter);
 
 app.use(errorHandler);
 
 export default app;
- 
