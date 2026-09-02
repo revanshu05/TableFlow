@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { IoGridOutline } from "react-icons/io5";
-import { FiPlus } from "react-icons/fi";
+import { socket } from "../socket";
 
 import TableCard from "../components/Tables/TableCard";
 
@@ -13,8 +13,6 @@ function Tables() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
     const [filter, setFilter] = useState("ALL");
-
-    const [showCreateModal, setShowCreateModal] = useState(false);
 
 
     const fetchTables = async () => {
@@ -50,6 +48,20 @@ function Tables() {
 
     useEffect(() => {
         fetchTables();
+
+        const handleTableStatusChanged = ({ tableId, status }) => {
+            setTables((prevTables) =>
+                prevTables.map((tbl) =>
+                    tbl._id === tableId ? { ...tbl, status } : tbl
+                )
+            );
+        };
+
+        socket.on("table:statusChanged", handleTableStatusChanged);
+        
+        return () => {
+            socket.off("table:statusChanged", handleTableStatusChanged);
+        };
     }, []);
 
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
+import { socket } from "../socket";
 
 import { IoReceiptOutline } from "react-icons/io5";
 import { FiPlus, FiCheckCircle } from "react-icons/fi";
@@ -105,6 +106,37 @@ function Orders() {
         fetchOrders();
 
     }, [filter, sort, page]);
+
+
+    useEffect(() => {
+
+        const handleOrderCreated = (newOrder) => {
+            setOrders((prev) => {
+                const exists = prev.some((o) => o._id === newOrder._id);
+
+                if(exists) return prev;
+                return [newOrder, ...prev];
+            });
+        };
+        
+        const handleOrderUpdate = (updatedOrder) => {
+            setOrders((prev) =>
+                prev.map((o) =>
+                    o._id === updatedOrder._id ? { ...o, ...updatedOrder } : o
+                )
+            );
+        };
+
+        socket.on("order:created", handleOrderCreated);
+        socket.on("order:billRequested", handleOrderUpdate);
+        socket.on("order:completed", handleOrderUpdate);
+
+        return () => {
+            socket.off("order:created", handleOrderCreated);
+            socket.off("order:billRequested", handleOrderUpdate);
+            socket.off("order:completed", handleOrderUpdate);
+        };
+    }, []);
 
 
     // HANDLERS

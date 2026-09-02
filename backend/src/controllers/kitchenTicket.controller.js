@@ -3,8 +3,8 @@ import mongoose, {Types} from "mongoose";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/apiError.js";
 import ApiResponse from "../utils/apiResponse.js";
+import { emitToRooms } from "../socket/socket.service.js";
 
-import Table from "../models/table.model.js";
 import MenuItem from "../models/menu.model.js";
 import KitchenTicket from "../models/kitchenTicket.model.js";
 import Order from "../models/order.model.js";
@@ -164,6 +164,8 @@ const createKitchenTicket = asyncHandler(async (req, res) => {
         await order.save({session});
 
         await session.commitTransaction();
+
+        emitToRooms(["room:kitchen", "room:admin"], "kot:created", kitchenTicket);
 
         return res.status(201).json(
             new ApiResponse(201, kitchenTicket, "Kitchen ticket created successfully")
@@ -555,6 +557,8 @@ const updateKitchenTicketStatus = asyncHandler(async (req, res) => {
 
         throw new ApiError(409, "Kitchen ticket status was changed earlier by another request or is not in valid status");
     }
+
+    emitToRooms(["room:kitchen", "room:waiter", "room:admin"], "kot:statusUpdated", updatedTicket);
 
     return res.status(200).json(
         new ApiResponse(200, updatedTicket, `Kitchen ticket successfully marked from: ${transition.from} to: ${transition.to}`)

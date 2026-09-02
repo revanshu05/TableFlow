@@ -1,14 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { socket } from "../socket";
 
 import {
     FiFileText,
     FiClock,
     FiCheckCircle,
-    FiArrowRight,
 } from "react-icons/fi";
-import { FaUser } from "react-icons/fa";
-import { MdTableRestaurant } from "react-icons/md";
 
 import BillCard from "../components/Billing/BillCard";
 import { getOrders } from "../api/order.api";
@@ -73,6 +71,33 @@ function Billing() {
 
         fetchOrders();
 
+        const handleBillRequested = (newOrder) => {
+            setOrders((prev) => {
+                const exists = prev.some((o) => o._id === newOrder._id);
+                
+                if(exists){
+                    return prev.map((o) => (o._id === newOrder._id ? newOrder : o));
+                }
+
+                return [newOrder, ...prev];
+            })
+        }
+
+        const handleOrderCompleted = (completedOrder) => {
+            setOrders((prev) => 
+                prev.map((o) => 
+                    o._id === completedOrder._id ? completedOrder : o
+                )
+            );
+        }
+
+        socket.on("order:billRequested", handleBillRequested);
+        socket.on("order:completed", handleOrderCompleted);
+
+        return () => {
+            socket.off("order:billRequested", handleBillRequested);
+            socket.off("order:completed", handleOrderCompleted);
+        };
     }, []);
 
 

@@ -3,6 +3,7 @@ import mongoose, { Types } from "mongoose";
 import asyncHandler from "../utils/asyncHandler.js";
 import ApiError from "../utils/apiError.js";
 import ApiResponse from "../utils/apiResponse.js";
+import { emitToRooms } from "../socket/socket.service.js";
 
 import restaurantSettings from "../models/restaurantSettings.model.js";
 import Order from "../models/order.model.js";
@@ -112,6 +113,18 @@ const createOrder = asyncHandler(async (req, res) => {
         }
 
         await session.commitTransaction();
+
+        await order.populate([
+            { path: "table", select: "tableNo capacity"},
+            { path: "waiter", select: "name email" }
+        ]);
+
+        emitToRooms(["room:waiter", "room:admin"], "table:statusChanged", {
+            tableId,
+            status: "OCCUPIED"
+        });
+
+        emitToRooms(["room:waiter", "room:admin"], "order:created", order);
 
         return res.status(201).json(
             new ApiResponse(
@@ -423,10 +436,12 @@ const requestBill = asyncHandler(async (req, res) => {
 
     await order.save();
 
-    await Order.populate([
+    await order.populate([
         {path: "waiter", select: "name"},
         {path: "table", select: "tableNo"}
     ]);
+
+    emitToRooms(["room:cashier", "room:admin", "room:waiter"], "order:billRequested", order);
 
     return res.status(200).json(
         new ApiResponse(200, order, "Bill requested successfully")
@@ -508,6 +523,12 @@ const completePayment = asyncHandler(async (req, res) => {
             {path: "table", select: "tableNo"},
             {path: "waiter", select: "name"}
         ]);
+
+        emitToRooms(["room:cashier", "room:admin", "room:waiter"], "order:completed", order);
+        emitToRooms(["room:waiter", "room:admin"], "table:statusChanged", {
+            tableId: order.table._id || order.table,
+            status: "AVAILABLE"
+        });
 
         return res.status(200).json(
             new ApiResponse(200, order, "Payment completed successfully")

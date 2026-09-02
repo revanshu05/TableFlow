@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FiRefreshCw, FiActivity } from "react-icons/fi";
 import { IoRestaurantOutline } from "react-icons/io5"
+import { socket } from "../socket";
 
 import {
     getKitchenTickets,
@@ -56,30 +57,63 @@ const Kitchen = () => {
         fetchTickets();
     }, []);
 
-    const handleStatusChange = async (
-        ticketId,
-        action
-    ) => {
+    useEffect(() => {
+        fetchTickets();
+
+        const handleKotCreated = (newTicket) => {
+            setTickets((prev) => {
+                const exists = prev.pending.some((t) => t._id === newTicket._id);
+                if (exists) return prev;
+
+                return {
+                    ...prev,
+                    pending: [newTicket, ...prev.pending],
+                };
+            });
+        };
+
+        const handleKotStatusUpdated = (updatedTicket) => {
+            setTickets((prev) => {
+                const ticketId = updatedTicket._id;
+
+                const newPending = prev.pending.filter((t) => t._id !== ticketId);
+                const newPreparing = prev.preparing.filter((t) => t._id !== ticketId);
+                const newReady = prev.ready.filter((t) => t._id !== ticketId);
+
+                if (updatedTicket.status === "PENDING") newPending.unshift(updatedTicket);
+                if (updatedTicket.status === "PREPARING") newPreparing.unshift(updatedTicket);
+                if (updatedTicket.status === "READY") newReady.unshift(updatedTicket);
+                
+                return {
+                    pending: newPending,
+                    preparing: newPreparing,
+                    ready: newReady,
+                };
+            });
+        };
+
+        socket.on("kot:created", handleKotCreated);
+        socket.on("kot:statusUpdated", handleKotStatusUpdated);
+
+        return () => {
+            socket.off("kot:created", handleKotCreated);
+            socket.off("kot:statusUpdated", handleKotStatusUpdated);
+        };
+    }, []);
+
+    const handleStatusChange = async (ticketId, action) => {
         try {
             setError("");
 
-            await updateKitchenTicketStatus(
-                ticketId,
-                action
-            );
-
-            await fetchTickets(false);
+            await updateKitchenTicketStatus(ticketId, action);
 
         } catch (error) {
-            console.error(
-                "Failed to update kitchen ticket status:",
-                error
-            );
-
+            console.error("Failed to update kitchen ticket status:", error);
             setError(
                 error.response?.data?.message ||
                 "Failed to update kitchen ticket status"
             );
+            fetchTickets(false);
         }
     };
 

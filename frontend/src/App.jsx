@@ -1,6 +1,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
+import { socket } from "./socket";
+import { useSelector } from "react-redux";
 
 import ProtectedRoute from "./components/shared/ProtectedRoute";
 import ProtectedLayout from "./components/shared/ProtectedLayout";
@@ -26,6 +28,17 @@ import Settings from "./pages/Settings";
 
 function App() {
     const dispatch = useDispatch();
+    
+    const { isAuthenticated } = useSelector((state) => state.auth);
+
+    useEffect(() => {
+        if(isAuthenticated) socket.connect();
+        else socket.disconnect();
+        
+        return () => {
+            socket.disconnect();
+        };
+    }, [isAuthenticated]);
 
     useEffect(() => {
         const checkAuth = async () => {
