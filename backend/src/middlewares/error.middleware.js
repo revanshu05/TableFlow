@@ -23,11 +23,15 @@ const errorHandler = (err, req, res, next) => {
 		const key = Object.keys(error.keyValue || {}).join(", ");
 		error.message = `${key} already exists`;
 	}
-	else if(error.name === "TokenExpiredError") {
+	else if(error.code === 112 || error.hasErrorLabel?.("TransientTransactionError")){
+		statusCode = 409;
+		error.message = "Resource was modified concurrently by another request. Please retry.";
+	}
+	else if(error.name === "TokenExpiredError"){
 		statusCode = 401;
 		error.message = "Authentication token expired";
 	}
-	else if(error.name === "JsonWebTokenError") {
+	else if(error.name === "JsonWebTokenError"){
 		statusCode = 401;
 		error.message = "Invalid authentication token";
 	}

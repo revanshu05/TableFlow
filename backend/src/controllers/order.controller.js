@@ -48,95 +48,92 @@ const createOrder = asyncHandler(async (req, res) => {
         );
     }
 
-    const session = await mongoose.startSession();
+        const session = await mongoose.startSession();
+    let createdOrder;
 
     try {
-        session.startTransaction();
-
-        const settings = await restaurantSettings.findOneAndUpdate(
-            {},
-            {
-                $inc: {
-                    nextOrderNumber: 1,
-                },
-            },
-            {
-                new: false,
-                session,
-            }
-        );
-
-        if (!settings) {
-            throw new ApiError(500, "Restaurant settings not initialized");
-        }
-
-        const orderNumber = settings.nextOrderNumber;
-
-        const [order] = await Order.create(
-            [
+        await session.withTransaction(async () => {
+            const settings = await restaurantSettings.findOneAndUpdate(
+                {},
                 {
-                    table: tableId,
-                    waiter: req.user._id,
-                    customer: {
-                        name: customer.name.trim(),
-                        phone: customer.phone?.trim() || "",
-                        members,
+                    $inc: {
+                        nextOrderNumber: 1,
                     },
-                    notes: notes?.trim() || "",
-                    orderNumber,
                 },
-            ],
-            { session }
-        );
-
-        const updatedTable = await Table.findOneAndUpdate(
-            {
-                _id: tableId,
-                status: "AVAILABLE",
-            },
-            {
-                status: "OCCUPIED",
-                assignedWaiter: req.user._id,
-                currentOrder: order._id,
-            },
-            {
-                session,
-                new: true,
-            }
-        );
-
-        if (!updatedTable) {
-            throw new ApiError(
-                409,
-                "Table was claimed by another order simultaneously."
+                {
+                    new: false,
+                    session,
+                }
             );
-        }
 
-        await session.commitTransaction();
+            if (!settings) {
+                throw new ApiError(500, "Restaurant settings not initialized");
+            }
 
-        await order.populate([
-            { path: "table", select: "tableNo capacity"},
-            { path: "waiter", select: "name email" }
+            const orderNumber = settings.nextOrderNumber;
+
+            const [order] = await Order.create(
+                [
+                    {
+                        table: tableId,
+                        waiter: req.user._id,
+                        customer: {
+                            name: customer.name.trim(),
+                            phone: customer.phone?.trim() || "",
+                            members,
+                        },
+                        notes: notes?.trim() || "",
+                        orderNumber,
+                    },
+                ],
+                { session }
+            );
+
+            const updatedTable = await Table.findOneAndUpdate(
+                {
+                    _id: tableId,
+                    status: "AVAILABLE",
+                },
+                {
+                    status: "OCCUPIED",
+                    assignedWaiter: req.user._id,
+                    currentOrder: order._id,
+                },
+                {
+                    session,
+                    new: true,
+                }
+            );
+
+            if (!updatedTable) {
+                throw new ApiError(
+                    409,
+                    "Table was claimed by another order simultaneously."
+                );
+            }
+
+            createdOrder = order;
+        });
+
+        await createdOrder.populate([
+            { path: "table", select: "tableNo capacity" },
+            { path: "waiter", select: "name email" },
         ]);
 
         emitToRooms(["room:waiter", "room:admin"], "table:statusChanged", {
             tableId,
-            status: "OCCUPIED"
+            status: "OCCUPIED",
         });
 
-        emitToRooms(["room:waiter", "room:admin"], "order:created", order);
+        emitToRooms(["room:waiter", "room:admin"], "order:created", createdOrder);
 
         return res.status(201).json(
             new ApiResponse(
                 201,
-                order,
+                createdOrder,
                 "New order created successfully"
             )
         );
-
-    } catch (error) {
-        await session.abortTransaction();
-        throw error;
     } finally {
         await session.endSession();
     }
