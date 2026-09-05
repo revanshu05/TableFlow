@@ -10,12 +10,14 @@ import {
     FiClock,
     FiFileText,
     FiPrinter,
+    FiDownload,
     FiCheckCircle,
 } from "react-icons/fi";
 
 import { MdAttachMoney } from "react-icons/md";
 
 import { getOrderById } from "../api/order.api";
+import { generateReceiptPDF } from "../utils/receiptGenerator";
 
 
 // HELPERS
@@ -78,6 +80,7 @@ function BillReceipt({ order }) {
     return (
 
         <div
+            id="bill-receipt-printable"
             className="
                 rounded-2xl
                 border
@@ -703,6 +706,7 @@ function PaymentPanel({
     order,
     onCompletePayment,
     onPrintReceipt,
+    onDownloadPDF,
 }) {
 
     const isPaid =
@@ -841,32 +845,71 @@ function PaymentPanel({
 
             ) : (
 
-                <button
-                    onClick={onPrintReceipt}
-                    className="
-                        mt-5
-                        flex
-                        w-full
-                        items-center
-                        justify-center
-                        gap-2
-                        rounded-lg
-                        bg-olive-600
-                        px-4
-                        py-3
-                        text-sm
-                        font-semibold
-                        text-white
-                        transition
-                        hover:bg-olive-700
-                    "
-                >
+                <div className="mt-5 space-y-2.5">
 
-                    <FiPrinter size={17} />
+                    <button
+                        onClick={onDownloadPDF}
+                        className="
+                            flex
+                            w-full
+                            items-center
+                            justify-center
+                            gap-2
+                            rounded-lg
+                            bg-orange-500
+                            hover:bg-orange-600
+                            active:scale-[0.99]
+                            px-4
+                            py-3
+                            text-sm
+                            font-semibold
+                            text-white
+                            transition
+                            shadow-lg
+                            shadow-orange-500/10
+                            cursor-pointer
+                        "
+                    >
 
-                    Print Receipt
+                        <FiDownload size={17} />
 
-                </button>
+                        Download Bill PDF
+
+                    </button>
+
+
+                    <button
+                        onClick={onPrintReceipt}
+                        className="
+                            flex
+                            w-full
+                            items-center
+                            justify-center
+                            gap-2
+                            rounded-lg
+                            bg-zinc-800
+                            border
+                            border-zinc-700
+                            hover:bg-zinc-750
+                            hover:border-zinc-600
+                            hover:text-white
+                            px-4
+                            py-2.5
+                            text-sm
+                            font-semibold
+                            text-zinc-200
+                            transition
+                            cursor-pointer
+                        "
+                    >
+
+                        <FiPrinter size={17} />
+
+                        Print Receipt
+
+                    </button>
+
+                </div>
 
             )}
 
@@ -1072,10 +1115,17 @@ function BillDetails() {
     };
 
 
+    const handleDownloadPDF = () => {
+
+        if (!order) return;
+        generateReceiptPDF(order);
+
+    };
+
+
     const handlePrintReceipt = () => {
 
-        // PDF generation will be added later.
-        console.log("Print receipt:", order._id);
+        window.print();
 
     };
 
@@ -1164,26 +1214,57 @@ function BillDetails() {
                 </div>
 
 
-                <span
-                    className={`
-                        rounded-full
-                        px-3
-                        py-1.5
-                        text-xs
-                        font-semibold
+                <div className="flex items-center gap-3">
 
-                        ${
-                            order.status === "COMPLETED"
-                                ? "bg-green-500/15 text-green-400"
-                                : "bg-orange-500/15 text-orange-400"
+                    {order.status === "COMPLETED" && (
+                        <button
+                            onClick={handleDownloadPDF}
+                            className="
+                                hidden
+                                sm:flex
+                                items-center
+                                gap-1.5
+                                rounded-lg
+                                bg-orange-500/15
+                                hover:bg-orange-500/25
+                                text-orange-400
+                                border
+                                border-orange-500/30
+                                px-3
+                                py-1.5
+                                text-xs
+                                font-semibold
+                                transition
+                                cursor-pointer
+                            "
+                        >
+                            <FiDownload size={14} />
+                            <span>Download PDF</span>
+                        </button>
+                    )}
+
+                    <span
+                        className={`
+                            rounded-full
+                            px-3
+                            py-1.5
+                            text-xs
+                            font-semibold
+
+                            ${
+                                order.status === "COMPLETED"
+                                    ? "bg-green-500/15 text-green-400"
+                                    : "bg-orange-500/15 text-orange-400"
+                            }
+                        `}
+                    >
+                        {order.status === "COMPLETED"
+                            ? "Paid"
+                            : "Payment Pending"
                         }
-                    `}
-                >
-                    {order.status === "COMPLETED"
-                        ? "Paid"
-                        : "Payment Pending"
-                    }
-                </span>
+                    </span>
+
+                </div>
 
             </div>
 
@@ -1220,11 +1301,40 @@ function BillDetails() {
                         order={order}
                         onCompletePayment={handleCompletePayment}
                         onPrintReceipt={handlePrintReceipt}
+                        onDownloadPDF={handleDownloadPDF}
                     />
 
                 </div>
 
             </div>
+
+            {/* PRINT STYLES */}
+            <style>{`
+                @media print {
+                    body {
+                        background: #ffffff !important;
+                        color: #000000 !important;
+                    }
+                    header, aside, nav, button, .no-print {
+                        display: none !important;
+                    }
+                    #bill-receipt-printable {
+                        border: 1px solid #e4e4e7 !important;
+                        background: #ffffff !important;
+                        color: #09090b !important;
+                        box-shadow: none !important;
+                        margin: 0 !important;
+                        width: 100% !important;
+                        max-width: 100% !important;
+                        border-radius: 0 !important;
+                    }
+                    #bill-receipt-printable * {
+                        color: #09090b !important;
+                        border-color: #e4e4e7 !important;
+                        background-color: transparent !important;
+                    }
+                }
+            `}</style>
 
         </section>
 

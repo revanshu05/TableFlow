@@ -101,7 +101,7 @@ function Auth() {
                     <div className="max-w-lg">
 
                         <p className="text-orange-400 font-semibold mb-4 text-xl">
-                            RESTAURANT POS SYSTEM
+                            RESTAURANT OPERATING SYSTEM
                         </p>
 
                         <h2 className="text-5xl font-bold leading-tight">
