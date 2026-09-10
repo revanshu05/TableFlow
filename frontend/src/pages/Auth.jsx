@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import logo from "../images/Dark_LOGO.png";
+import logo from "../images/Dark_Logo.png";
 
 import { loginUser } from "../api/auth.api";
 import { setCredentials } from "../redux/slices/authSlice";
