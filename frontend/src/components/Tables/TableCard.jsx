@@ -1,11 +1,10 @@
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
-
 import {
     updateTable,
     setCustomer,
 } from "../../redux/slices/customerSlice";
-
+import { LuUsers } from "react-icons/lu";
 
 function TableCard({
     tableNo,
@@ -14,21 +13,16 @@ function TableCard({
     waiter,
     currentOrder,
 }) {
-
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-
     const handleClick = () => {
-
         if (status === "AVAILABLE") return;
 
         if (status === "OCCUPIED") {
-
             dispatch(updateTable({
                 tableNo,
             }));
-
 
             dispatch(setCustomer({
                 name: currentOrder?.customer?.name || "",
@@ -38,148 +32,79 @@ function TableCard({
                 orderId: currentOrder?._id,
             }));
 
-
             navigate("/menu");
         }
-
     };
 
-
-    const statusConfig = {
-        AVAILABLE: {
-            badge: "bg-green-500/20 text-green-400",
-            text: "Available",
-        },
-
-        OCCUPIED: {
-            badge: "bg-red-500/20 text-red-400",
-            text: "Occupied",
-        },
-    };
-
-
-    const currentStatus =
-        statusConfig[status] || {
-            badge: "bg-zinc-500/20 text-zinc-400",
-            text: status,
-        };
-
+    const formattedTableNo = String(tableNo).padStart(2, "0");
+    const isOccupied = status === "OCCUPIED";
 
     return (
         <div
             onClick={handleClick}
-            className="
+            className={`
                 group
+                relative
+                aspect-square
                 w-full
-                bg-zinc-900
                 rounded-xl
-                p-4
-                border
-                border-zinc-800
+                p-3
+                flex
+                flex-col
+                justify-between
                 cursor-pointer
                 transition-all
-                duration-300
+                duration-150
                 ease-out
-                hover:translate-0.5
-                hover:scale-[1.02]
-                hover:bg-zinc-800
-                hover:border-orange-500/50
-                hover:shadow-[0_8px_30px_rgba(249,115,22,0.15)]
-                active:scale-[0.98]
-            "
+                hover:scale-[1.03]
+                active:scale-[0.97]
+                ${
+    isOccupied
+        ? `
+            bg-orange-500/20
+            hover:border-orange-400
+            hover:bg-orange-500/15
+        `
+        : `
+            bg-zinc-900/30
+            border-2
+            border-dashed
+            border-zinc-700/80
+            hover:border-zinc-500
+            hover:bg-zinc-900/60
+        `
+}
+            `}
         >
+            {/* Table Number */}
+            <span
+                className={`
+                    text-2xl
+                    font-bold
+                    tracking-tight
+                    ${isOccupied ? "text-white" : "text-zinc-300"}
+                `}
+            >
+                {formattedTableNo}
+            </span>
 
-            {/* Table number + status */}
-
-            <div className="
-                flex
-                justify-between
-                items-center
-            ">
-
-                <h2 className="
-                    text-white
-                    text-xl
-                    font-semibold
-                    transition-colors
-                    duration-300
-                    group-hover:text-orange-400
-                ">
-                    Table {tableNo}
-                </h2>
-
-
-                <div className={`
-                    px-3
-                    py-1
-                    rounded-md
-                    text-xs
+            {/* Bottom: Capacity Only */}
+            <div
+                className={`
+                    flex
+                    items-center
+                    gap-1
+                    text-sm
                     font-medium
-                    ${currentStatus.badge}
-                `}>
-                    {currentStatus.text}
-                </div>
-
+                    ${isOccupied ? "text-white" : "text-zinc-500"}
+                `}
+            >
+                <LuUsers size={13} className={isOccupied ? "text-white" : "text-zinc-500"} />
+                <span>{seats}</span>
+                <span className="text-sm">seats</span>
             </div>
-
-
-            {/* Table information */}
-
-            <div className="
-                mt-6
-                space-y-3
-            ">
-
-                {/* Seats */}
-
-                <div className="
-                    flex
-                    justify-between
-                    items-center
-                    text-sm
-                ">
-
-                    <span className="text-zinc-500">
-                        Seats
-                    </span>
-
-                    <span className="
-                        text-zinc-200
-                        font-medium
-                    ">
-                        {seats}
-                    </span>
-
-                </div>
-
-
-                {/* Waiter */}
-
-                <div className="
-                    flex
-                    justify-between
-                    items-center
-                    text-sm
-                ">
-
-                    <span className="text-zinc-500">
-                        Waiter
-                    </span>
-
-                    <span className="
-                        text-zinc-200
-                        font-medium
-                    ">
-                        {waiter?.name || "Unassigned"}
-                    </span>
-
-                </div>
-
-            </div>
-
         </div>
     );
 }
-
 
 export default TableCard;

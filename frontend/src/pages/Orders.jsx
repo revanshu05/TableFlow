@@ -478,23 +478,83 @@ function Orders() {
                 "
             >
 
-                {/* LOADING */}
+                {/* LOADING SKELETON */}
 
                 {loading && (
-
                     <div
                         className="
-                            flex
-                            h-40
-                            items-center
-                            justify-center
-                            text-sm
-                            text-zinc-400
+                            grid
+                            grid-cols-1
+                            gap-5
+                            pb-6
+                            md:grid-cols-2
+                            xl:grid-cols-3
                         "
                     >
-                        Loading orders...
-                    </div>
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="
+                                    w-full
+                                    rounded-xl
+                                    bg-zinc-900
+                                    border
+                                    border-zinc-800
+                                    p-3.5
+                                    animate-pulse
+                                "
+                            >
+                                {/* Top: Customer Avatar + Order# & Status Badge */}
+                                <div className="flex justify-between items-start">
+                                    <div className="flex items-center gap-3">
+                                        {/* Avatar */}
+                                        <div className="w-10 h-10 rounded-lg bg-zinc-800 shrink-0" />
+                                        <div className="space-y-1.5">
+                                            {/* Order # */}
+                                            <div className="h-4.5 w-24 rounded bg-zinc-700/70" />
+                                            {/* Customer Name */}
+                                            <div className="h-3 w-16 rounded bg-zinc-800" />
+                                        </div>
+                                    </div>
 
+                                    {/* Status Badge */}
+                                    <div className="h-6 w-24 rounded-full bg-zinc-800" />
+                                </div>
+
+                                {/* Middle: 2x2 Information Grid */}
+                                <div className="grid grid-cols-2 gap-y-3 mt-4">
+                                    <div className="space-y-1.5">
+                                        <div className="h-3 w-10 rounded bg-zinc-800/80" />
+                                        <div className="h-4 w-20 rounded bg-zinc-700/50" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="h-3 w-14 rounded bg-zinc-800/80" />
+                                        <div className="h-4 w-10 rounded bg-zinc-700/50" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="h-3 w-10 rounded bg-zinc-800/80" />
+                                        <div className="h-4 w-10 rounded bg-zinc-700/50" />
+                                    </div>
+                                    <div className="space-y-1.5">
+                                        <div className="h-3 w-10 rounded bg-zinc-800/80" />
+                                        <div className="h-4 w-10 rounded bg-zinc-700/50" />
+                                    </div>
+                                </div>
+
+                                {/* Bottom: Date and Order Total */}
+                                <div className="flex justify-between items-end mt-4 pt-3 border-t border-zinc-800">
+                                    <div className="space-y-1.5">
+                                        <div className="h-3 w-12 rounded bg-zinc-800/80" />
+                                        <div className="h-3.5 w-32 rounded bg-zinc-800" />
+                                    </div>
+                                    <div className="space-y-1.5 flex flex-col items-end">
+                                        <div className="h-3 w-16 rounded bg-zinc-800/80" />
+                                        <div className="h-6 w-20 rounded bg-zinc-700/70" />
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 )}
 
 

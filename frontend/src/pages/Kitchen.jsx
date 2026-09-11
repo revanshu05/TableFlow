@@ -122,16 +122,6 @@ const Kitchen = () => {
         tickets.preparing.length +
         tickets.ready.length;
 
-    if (loading) {
-        return (
-            <div className="flex min-h-[calc(100vh-64px)] items-center justify-center">
-                <p className="text-sm text-gray-500">
-                    Loading kitchen...
-                </p>
-            </div>
-        );
-    }
-
     return (
         <div className="flex flex-col overflow-hidden h-full min-h-0 bg-zinc-800 px-6 py-4">
 
@@ -218,6 +208,7 @@ const Kitchen = () => {
                         tickets={tickets.pending}
                         onStatusChange={handleStatusChange}
                         showDivider={true}
+                        loading={loading}
                     />
 
                     <KitchenColumn
@@ -226,6 +217,7 @@ const Kitchen = () => {
                         tickets={tickets.preparing}
                         onStatusChange={handleStatusChange}
                         showDivider={true}
+                        loading={loading}
                     />
 
                     <KitchenColumn
@@ -234,6 +226,7 @@ const Kitchen = () => {
                         tickets={tickets.ready}
                         onStatusChange={handleStatusChange}
                         showDivider={false}
+                        loading={loading}
                     />
 
                 </div>

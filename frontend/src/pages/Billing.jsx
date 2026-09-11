@@ -143,33 +143,6 @@ function Billing() {
     };
 
 
-    // LOADING
-
-    if (loading) {
-
-        return (
-
-            <section
-                className="
-                    flex
-                    h-[calc(100vh-3.5rem)]
-                    items-center
-                    justify-center
-                    bg-zinc-800
-                "
-            >
-
-                <p className="text-sm text-zinc-400">
-                    Loading billing...
-                </p>
-
-            </section>
-
-        );
-
-    }
-
-
     // MAIN UI
 
     return (
@@ -253,29 +226,6 @@ function Billing() {
                     "
                 >
 
-                    {/* ALL */}
-
-                    <button
-                        onClick={() => setFilter("ALL")}
-                        className={`
-                            rounded-lg
-                            px-3
-                            py-2
-                            text-xs
-                            transition-all
-                            duration-200
-
-                            ${
-                                filter === "ALL"
-                                    ? "bg-zinc-700 text-white"
-                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                            }
-                        `}
-                    >
-                        All
-                    </button>
-
-
                     {/* PAYMENT PENDING */}
 
                     <button
@@ -295,7 +245,7 @@ function Billing() {
 
                             ${
                                 filter === "PAYMENT_PENDING"
-                                    ? "bg-blue-500/15 text-blue-400"
+                                    ? "bg-orange-500/20 text-orange-400 font-semibold"
                                     : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
                             }
                         `}
@@ -303,7 +253,9 @@ function Billing() {
 
                         <FiClock size={14} />
 
-                        Pending
+                        <span>
+                            Pending
+                        </span>
 
                     </button>
 
@@ -327,7 +279,7 @@ function Billing() {
 
                             ${
                                 filter === "COMPLETED"
-                                    ? "bg-green-500/15 text-green-400"
+                                    ? "bg-green-500/20 text-green-400 font-semibold"
                                     : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
                             }
                         `}
@@ -335,8 +287,35 @@ function Billing() {
 
                         <FiCheckCircle size={14} />
 
-                        Paid
+                        <span>
+                            Paid
+                        </span>
 
+                    </button>
+
+
+                    {/* ALL */}
+
+                    <button
+                        onClick={() =>
+                            setFilter("ALL")
+                        }
+                        className={`
+                            rounded-lg
+                            px-3
+                            py-2
+                            text-xs
+                            transition-all
+                            duration-200
+
+                            ${
+                                filter === "ALL"
+                                    ? "bg-zinc-700 text-white font-semibold"
+                                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                            }
+                        `}
+                    >
+                        All
                     </button>
 
                 </div>
@@ -356,16 +335,15 @@ function Billing() {
             />
 
 
-            {/* ERROR */}
+            {/* ERROR MESSAGE */}
 
-            {error && (
+            {!loading && error && (
 
                 <div
                     className="
                         mx-6
                         mt-4
-                        shrink-0
-                        rounded-lg
+                        rounded-xl
                         border
                         border-red-500/20
                         bg-red-500/10
@@ -393,7 +371,71 @@ function Billing() {
                 "
             >
 
-                {filteredOrders.length === 0 ? (
+                {loading ? (
+
+                    <div
+                        className="
+                            grid
+                            grid-cols-1
+                            gap-4
+                            md:grid-cols-2
+                            xl:grid-cols-3
+                            2xl:grid-cols-4
+                        "
+                    >
+
+                        {Array.from({ length: 8 }).map((_, i) => (
+
+                            <div
+                                key={i}
+                                className="
+                                    rounded-xl
+                                    border
+                                    border-zinc-800
+                                    bg-zinc-900/80
+                                    p-5
+                                    animate-pulse
+                                "
+                            >
+
+                                <div className="flex items-start gap-4">
+
+                                    <div className="h-11 w-11 shrink-0 rounded-xl bg-zinc-800" />
+
+                                    <div className="flex-1 space-y-2">
+
+                                        <div className="flex justify-between items-center">
+                                            <div className="h-4 w-24 rounded bg-zinc-700/70" />
+                                            <div className="h-5 w-14 rounded-md bg-zinc-800" />
+                                        </div>
+
+                                        <div className="h-3 w-32 rounded bg-zinc-800" />
+
+                                    </div>
+
+                                </div>
+
+                                <div className="my-3 border-t border-zinc-800" />
+
+                                <div className="flex justify-between items-center py-1">
+                                    <div className="h-3.5 w-20 rounded bg-zinc-800" />
+                                    <div className="h-3.5 w-16 rounded bg-zinc-800" />
+                                </div>
+
+                                <div className="my-3 border-t border-zinc-800" />
+
+                                <div className="flex justify-between items-center">
+                                    <div className="h-3 w-16 rounded bg-zinc-800" />
+                                    <div className="h-5 w-20 rounded bg-zinc-700/60" />
+                                </div>
+
+                            </div>
+
+                        ))}
+
+                    </div>
+
+                ) : filteredOrders.length === 0 ? (
 
                     <div
                         className="

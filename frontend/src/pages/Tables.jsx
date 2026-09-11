@@ -246,20 +246,36 @@ function Tables() {
                 {/* Loading */}
 
                 {loading && (
+                    <div className="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3.5 pb-4">
+                        {Array.from({ length: 24 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="
+                                    aspect-square
+                                    w-full
+                                    max-w-[140px]
+                                    mx-auto
+                                    rounded-xl
+                                    border-2
+                                    border-dashed
+                                    border-zinc-700/50
+                                    bg-zinc-900/40
+                                    p-3
+                                    flex
+                                    flex-col
+                                    justify-between
+                                    animate-pulse
+                                "
+                            >
+                                <div className="h-6 w-8 rounded-md bg-zinc-700/60" />
 
-                    <div
-                        className="
-                            flex
-                            h-40
-                            items-center
-                            justify-center
-                            text-sm
-                            text-zinc-400
-                        "
-                    >
-                        Loading tables...
+                                <div className="flex items-center gap-1.5">
+                                    <div className="h-3.5 w-3.5 rounded-full bg-zinc-700/50" />
+                                    <div className="h-3 w-10 rounded bg-zinc-700/40" />
+                                </div>
+                            </div>
+                        ))}
                     </div>
-
                 )}
 
 
@@ -289,33 +305,21 @@ function Tables() {
                     !error &&
                     filteredTables.length > 0 && (
 
-                        <div
-                            className="
-                                grid
-                                grid-cols-2
-                                gap-5
-                                pb-4
-                                md:grid-cols-3
-                                lg:grid-cols-4
-                                xl:grid-cols-5
-                            "
-                        >
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-3.5 pb-4">
 
                             {filteredTables.map((table) => (
 
-                                <TableCard
-                                    key={table._id}
-                                    tableNo={table.tableNo}
-                                    seats={table.capacity}
-                                    status={table.status}
-                                    waiter={table.assignedWaiter}
-                                    currentOrder={table.currentOrder}
-                                />
-
+                                <div key={table._id} className="max-w-[140px] w-full mx-auto">
+                                    <TableCard
+                                        tableNo={table.tableNo}
+                                        seats={table.capacity}
+                                        status={table.status}
+                                        waiter={table.assignedWaiter}
+                                        currentOrder={table.currentOrder}
+                                    />
+                                </div>
                             ))}
-
                         </div>
-
                     )}
 
 

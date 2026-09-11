@@ -1,458 +1,261 @@
 import { useEffect, useState } from "react";
-
 import { FaPlus, FaMinus } from "react-icons/fa6";
-import { FaShoppingCart } from "react-icons/fa";
-
-import { useDispatch } from "react-redux";
-import { addItem } from "../../redux/slices/cartSlice";
-
+import { useDispatch, useSelector } from "react-redux";
+import { addItem, decreaseQuantity } from "../../redux/slices/cartSlice";
 import { getMenuItems } from "../../api/menu.api";
 
-
 function MenuContainer() {
-
     const dispatch = useDispatch();
+    const cartItems = useSelector((state) => state.cart.items);
 
     const [menuItems, setMenuItems] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("ALL");
-
-    const [selectedItems, setSelectedItems] = useState({});
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-
-    // Fetch menu
     useEffect(() => {
-
         const fetchMenu = async () => {
-
             try {
-
                 setLoading(true);
                 setError("");
-
                 const response = await getMenuItems();
-
-                console.log("Menu response:", response.data);
-
                 setMenuItems(response.data.data || []);
-
             } catch (error) {
-
                 console.error("Failed to fetch menu:", error);
-
-                setError(
-                    error.response?.data?.message ||
-                    "Failed to load menu"
-                );
-
+                setError(error.response?.data?.message || "Failed to load menu");
             } finally {
-
                 setLoading(false);
-
             }
-
         };
 
-
         fetchMenu();
-
     }, []);
 
+    const categories = ["ALL", ...new Set(menuItems.map((item) => item.category))];
 
-    // Categories from API response
-    const categories = [
-        "ALL",
-        ...new Set(
-            menuItems.map((item) => item.category)
-        ),
-    ];
-
-
-    // Filter items
     const filteredItems =
         selectedCategory === "ALL"
             ? menuItems
-            : menuItems.filter(
-                (item) => item.category === selectedCategory
-            );
+            : menuItems.filter((item) => item.category === selectedCategory);
 
-
-    // Increase selected quantity
-    const increment = (id) => {
-
-        setSelectedItems((prev) => ({
-            ...prev,
-            [id]: (prev[id] || 0) + 1,
-        }));
-
-    };
-
-
-    // Decrease selected quantity
-    const decrement = (id) => {
-
-        setSelectedItems((prev) => ({
-            ...prev,
-            [id]: Math.max(
-                (prev[id] || 0) - 1,
-                0
-            ),
-        }));
-
-    };
-
-
-    // Add item to current KOT/cart
-    const addToCart = (item) => {
-
-        const quantity = selectedItems[item._id] || 0;
-
-        if (quantity === 0) return;
-
+    const handleIncrement = (item) => {
         dispatch(
             addItem({
                 id: item._id,
                 name: item.name,
                 price: item.price,
-                quantity,
+                quantity: 1,
                 category: item.category,
             })
         );
-
-
-        // Reset selected quantity
-        setSelectedItems((prev) => ({
-            ...prev,
-            [item._id]: 0,
-        }));
-
     };
 
+    const handleDecrement = (itemId) => {
+        dispatch(decreaseQuantity(itemId));
+    };
 
-    // Loading
+    const getItemQuantity = (itemId) => {
+        const found = cartItems.find((i) => i.id === itemId);
+        return found ? found.quantity : 0;
+    };
+
     if (loading) {
-
         return (
-            <div className="
-                h-full
-                flex
-                items-center
-                justify-center
-                text-zinc-400
-            ">
-                Loading menu...
+            <div className="h-full flex flex-col mx-3 sm:mx-5 animate-pulse">
+                <div className="border-b border-zinc-700/60 mb-3" />
+
+                <div className="flex gap-2.5 overflow-hidden py-2 shrink-0">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                        <div key={i} className="h-9 w-24 rounded-xl bg-zinc-900 border border-zinc-800 shrink-0" />
+                    ))}
+                </div>
+
+                <div className="border-b border-zinc-700/60 my-3" />
+
+                <div className="flex flex-col gap-2.5 overflow-y-auto pr-1 sm:pr-2 flex-1 pb-4">
+                    {Array.from({ length: 7 }).map((_, i) => (
+                        <div
+                            key={i}
+                            className="flex items-center justify-between bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3"
+                        >
+                            <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-4">
+                                <div className="w-2.5 h-2.5 rounded-full bg-zinc-800" />
+                                <div className="space-y-2 min-w-0 flex-1">
+                                    <div className="h-4 w-40 rounded bg-zinc-700/70" />
+                                    <div className="h-3 w-24 rounded bg-zinc-800" />
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-5 shrink-0">
+                                <div className="w-20 flex justify-end">
+                                    <div className="h-5 w-12 rounded bg-zinc-700/60" />
+                                </div>
+                                <div className="w-28 flex justify-end">
+                                    <div className="h-10 w-28 rounded-lg bg-zinc-800" />
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
-
     }
 
-
-    // Error
     if (error) {
-
         return (
-            <div className="
-                h-full
-                flex
-                items-center
-                justify-center
-                text-red-400
-            ">
+            <div className="h-full flex items-center justify-center text-sm text-red-400">
                 {error}
             </div>
         );
-
     }
 
-
     return (
+        <div className="h-full flex flex-col mx-3 sm:mx-5">
+            <div className="border-b border-zinc-700/60 mb-2" />
 
-        <div className="
-            h-full
-            flex
-            flex-col
-            mx-5
-        ">
-
-            <div className="
-                border-b
-                border-zinc-700
-                mb-3
-            " />
-
-            {/* Categories */}
-
-            <div className="
-                flex
-                gap-3
-                overflow-x-auto
-                min-h-fit
-            ">
-
+            <div className="flex gap-2 sm:gap-3 overflow-x-auto min-h-fit py-1 no-scrollbar shrink-0">
                 {categories.map((category) => {
-
                     const active = selectedCategory === category;
-
-
                     return (
-
                         <button
                             key={category}
-                            onClick={() =>
-                                setSelectedCategory(category)
-                            }
+                            onClick={() => setSelectedCategory(category)}
                             className={`
-                                px-5
-                                py-2.5
+                                px-4 py-2 sm:px-5 sm:py-2.5
                                 rounded-xl
-                                text-sm
+                                text-xs sm:text-sm
                                 font-semibold
                                 whitespace-nowrap
                                 transition-all
                                 duration-200
-
                                 ${
                                     active
-                                        ? `
-                                            bg-orange-500
-                                            text-white
-                                            shadow-[0_0_15px_rgba(249,115,22,0.25)]
-                                        `
-                                        : `
-                                            bg-zinc-900
-                                            text-zinc-400
-                                            border
-                                            border-zinc-800
-                                            hover:text-zinc-200
-                                            hover:border-orange-500/40
-                                        `
+                                        ? "bg-orange-500/70 text-white "
+                                        : "bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-zinc-200 hover:border-orange-500/40"
                                 }
                             `}
                         >
                             {category
                                 .replaceAll("_", " ")
                                 .toLowerCase()
-                                .replace(/\b\w/g, (char) =>
-                                    char.toUpperCase()
-                                )}
+                                .replace(/\b\w/g, (char) => char.toUpperCase())}
                         </button>
-
                     );
-
                 })}
-
             </div>
 
+            <div className="border-b border-zinc-700/60 my-2" />
 
-            <div className="
-                border-b
-                border-zinc-700
-                my-3
-            " />
-
-
-            {/* Menu Items */}
-
-            <div className="
-                flex
-                flex-col
-                overflow-y-auto
-                pr-2
-                w-full
-                mx-auto
-            ">
-
+            <div className="flex flex-col gap-2.5 overflow-y-auto pr-1 sm:pr-2 flex-1 pb-4">
                 {filteredItems.length === 0 && (
-
-                    <div className="
-                        flex
-                        justify-center
-                        items-center
-                        h-40
-                        text-zinc-500
-                    ">
+                    <div className="flex justify-center items-center h-40 text-zinc-500 text-sm">
                         No menu items found.
                     </div>
-
                 )}
 
+                {filteredItems.map((item) => {
+                    const quantity = getItemQuantity(item._id);
 
-                {filteredItems.map((item) => (
+                    return (
+                        <div
+                            key={item._id}
+                            className="
+                                flex
+                                items-center
+                                justify-between
+                                bg-zinc-900
+                                border
+                                border-zinc-800
+                                rounded-xl
+                                px-4
+                                py-3
+                                hover:border-zinc-700/80
+                                transition-colors
+                            "
+                        >
+                            <div className="flex items-center gap-3.5 min-w-0 flex-1 pr-4">
+                                <div className="w-2.5 h-2.5 rounded-full bg-orange-400/80 shrink-0" />
 
-                    <div
-                        key={item._id}
-                        className="
-                            flex
-                            items-center
-                            justify-between
-                            mb-2
-                            bg-zinc-900
-                            border
-                            border-zinc-800
-                            rounded-xl
-                            px-3
-                            py-2
-                            hover:border-orange-400/60
-                            transition-all
-                            duration-200
-                        "
-                    >
-
-                        {/* Left */}
-
-                        <div className="
-                            flex
-                            items-center
-                            gap-4
-                        ">
-
-                            <div className="
-                                w-3
-                                h-3
-                                rounded-full
-                                bg-sky-700"
-                            />
-
-                            <div className="w-60">
-
-                                <h2 className="
-                                    text-lg
-                                    font-semibold
-                                    text-zinc-100
-                                ">
-                                    {item.name}
-                                </h2>
-
-                                {item.description && (
-
-                                    <p className="
-                                        text-xs
-                                        text-zinc-500
-                                        mt-0.5
-                                    ">
-                                        {item.description}
-                                    </p>
-
-                                )}
-
+                                <div className="min-w-0 flex-1">
+                                    <h2 className="text-sm sm:text-base font-semibold text-zinc-100 truncate">
+                                        {item.name}
+                                    </h2>
+                                    {item.description ? (
+                                        <p className="text-xs text-zinc-500 truncate mt-0.5">
+                                            {item.description}
+                                        </p>
+                                    ) : (
+                                        <p className="text-xs text-zinc-600 truncate mt-0.5 capitalize">
+                                            {item.category?.toLowerCase() || "item"}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
-
-                            <div>
-
-                                <p className="
-                                    text-orange-400
-                                    font-semibold
-                                ">
-                                    ₹{item.price}
-                                </p>
-
-                            </div>
-
-                        </div>
-
-
-                        {/* Right */}
-
-                        <div className="
-                            flex
-                            items-center
-                            gap-4
-                        ">
-
-                            {/* Quantity */}
-
-                            <div className="w-30">
-
-                                <div className="
-                                    flex
-                                    items-center
-                                    justify-between
-                                    rounded-lg
-                                    py-2
-                                    px-4
-                                    bg-zinc-800
-                                ">
-
-                                    <button
-                                        className="
-                                            text-amber-300
-                                            hover:text-amber-500
-                                            duration-200
-                                        "
-                                        onClick={() =>
-                                            decrement(item._id)
-                                        }
-                                    >
-                                        <FaMinus size={18} />
-                                    </button>
-
-
-                                    <span className="
-                                        text-lg
-                                        text-zinc-300
-                                        font-semibold
-                                        px-3
-                                    ">
-                                        {selectedItems[item._id] || 0}
+                            <div className="flex items-center gap-5 shrink-0">
+                                <div className="w-20 text-right">
+                                    <span className="text-base sm:text-lg font-bold text-orange-400">
+                                        ₹{item.price}
                                     </span>
-
-
-                                    <button
-                                        className="
-                                            text-amber-300
-                                            hover:text-amber-500
-                                            duration-200
-                                        "
-                                        onClick={() =>
-                                            increment(item._id)
-                                        }
-                                    >
-                                        <FaPlus size={18} />
-                                    </button>
-
                                 </div>
 
+                                <div className="w-28 flex justify-end">
+                                    {quantity === 0 ? (
+                                        <button
+                                            onClick={() => handleIncrement(item)}
+                                            className="
+                                                h-10
+                                                w-28
+                                                flex
+                                                items-center
+                                                justify-center
+                                                gap-1.5
+                                                rounded-lg
+                                                bg-zinc-800
+                                                border
+                                                border-zinc-700/60
+                                                text-zinc-300
+                                                text-xs
+                                                font-semibold
+                                                hover:bg-orange-500/30
+                                                hover:text-white
+                                                hover:border-orange-500/30
+                                                active:scale-[0.97]
+                                                transition-all
+                                                duration-150
+                                            "
+                                        >
+                                            <FaPlus size={11} />
+                                            <span>Add</span>
+                                        </button>
+                                    ) : (
+                                        <div className="h-10 w-28 flex items-center justify-between rounded-lg bg-zinc-800 border border-zinc-700/60 px-1.5 shadow-sm">
+                                            <button
+                                                className="h-7 w-7 flex items-center justify-center rounded text-orange-400 hover:bg-orange-500/30 hover:text-white transition active:scale-90"
+                                                onClick={() => handleDecrement(item._id)}
+                                            >
+                                                <FaMinus size={11} />
+                                            </button>
+
+                                            <span className="text-sm font-bold text-white select-none">
+                                                {quantity}
+                                            </span>
+
+                                            <button
+                                                className="h-7 w-7 flex items-center justify-center rounded text-orange-400 hover:bg-orange-500/30 hover:text-white transition active:scale-90"
+                                                onClick={() => handleIncrement(item)}
+                                            >
+                                                <FaPlus size={11} />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-
-
-                            {/* Add to cart */}
-
-                            <button
-                                className="
-                                    ml-5
-                                    h-10
-                                    w-10
-                                    rounded-lg
-                                    bg-green-600
-                                    hover:bg-green-500
-                                    transition
-                                "
-                                onClick={() =>
-                                    addToCart(item)
-                                }
-                            >
-                                <FaShoppingCart
-                                    className="m-auto text-zinc-200"
-                                    size={22}
-                                />
-                            </button>
-
                         </div>
-
-                    </div>
-
-                ))}
-
+                    );
+                })}
             </div>
-
         </div>
-
     );
-
 }
-
 
 export default MenuContainer;

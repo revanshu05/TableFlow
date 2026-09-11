@@ -7,6 +7,7 @@ const KitchenColumn = ({
     status,
     onStatusChange,
     showDivider = true,
+    loading = false,
 }) => {
 
     const getColumnConfig = () => {
@@ -76,7 +77,7 @@ const KitchenColumn = ({
                 <span
                     className={`text-lg font-semibold ${config.countClass}`}
                 >
-                    {tickets.length}
+                    {loading ? "--" : tickets.length}
                 </span>
 
             </div>
@@ -87,7 +88,39 @@ const KitchenColumn = ({
             {/* Scrollable Ticket Area */}
             <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-4">
 
-                {tickets.length === 0 ? (
+                {loading ? (
+                    <div className="space-y-4">
+                        {Array.from({ length: 3 }).map((_, i) => (
+                            <div
+                                key={i}
+                                className="rounded-xl border border-white/10 bg-[#18181b] p-4 animate-pulse"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div className="h-5 w-20 rounded bg-zinc-800" />
+                                    <div className="h-5 w-16 rounded-full bg-zinc-800" />
+                                </div>
+
+                                <div className="mt-3 flex items-center gap-3">
+                                    <div className="h-3 w-16 rounded bg-zinc-800/80" />
+                                    <div className="h-3 w-14 rounded bg-zinc-800/80" />
+                                </div>
+
+                                <div className="mt-4 space-y-2 border-t border-white/5 pt-3">
+                                    <div className="flex justify-between">
+                                        <div className="h-3.5 w-28 rounded bg-zinc-800" />
+                                        <div className="h-3.5 w-6 rounded bg-zinc-800" />
+                                    </div>
+                                    <div className="flex justify-between">
+                                        <div className="h-3.5 w-20 rounded bg-zinc-800" />
+                                        <div className="h-3.5 w-6 rounded bg-zinc-800" />
+                                    </div>
+                                </div>
+
+                                <div className="mt-4 h-9 w-full rounded-lg bg-zinc-800/70" />
+                            </div>
+                        ))}
+                    </div>
+                ) : tickets.length === 0 ? (
 
                     <div className="flex min-h-50 flex-col items-center justify-center text-center">
 
