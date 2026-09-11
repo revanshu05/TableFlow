@@ -27,7 +27,10 @@ api.interceptors.response.use(
 
                 return api(originalRequest);
             } catch (refreshError) {
-                window.location.href = "/auth";
+                // Only redirect if not already on the auth page to prevent infinite reload loops
+                if (window.location.pathname !== "/auth" && !originalRequest.url?.includes("/users/current-user")) {
+                    window.location.href = "/auth";
+                }
                 return Promise.reject(refreshError);
             }
         }
