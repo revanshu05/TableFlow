@@ -97,34 +97,42 @@ function Sidebar() {
 
     return (
         <aside className="
-            w-56
+            w-16
+            md:w-56
+            shrink-0
             min-h-screen
             bg-zinc-950
             border-r
             border-zinc-800
             flex
             flex-col
+            transition-all
+            duration-300
         ">
 
             {/* Logo */}
             <div className="
-                h-20
-                px-6
+                h-16
+                md:h-20
+                px-3
+                md:px-6
                 flex
                 items-center
+                justify-center
+                md:justify-start
                 border-b
                 border-zinc-800
             ">
                 <img
                     src={logo}
                     alt="TableFlow"
-                    className="h-9"
+                    className="h-7 md:h-9 object-contain"
                 />
             </div>
 
 
             {/* Navigation */}
-            <nav className="flex-1 px-3 py-4 overflow-y-auto">
+            <nav className="flex-1 px-2 md:px-3 py-4 overflow-y-auto no-scrollbar">
 
                 {navigation.map((section) => {
 
@@ -136,76 +144,85 @@ function Sidebar() {
                         return null;
                     }
 
-                    return <div
-                        key={section.section}
-                        className="mb-3"
-                    >
+                    return (
+                        <div
+                            key={section.section}
+                            className="mb-4"
+                        >
 
-                        <p className="
-                            px-3
-                            mb-2
-                            text-[11px]
-                            uppercase
-                            tracking-widest
-                            text-zinc-500
-                            font-semibold
-                        ">
-                            {section.section}
-                        </p>
+                            <p className="
+                                hidden
+                                md:block
+                                px-3
+                                mb-2
+                                text-[11px]
+                                uppercase
+                                tracking-widest
+                                text-zinc-500
+                                font-semibold
+                            ">
+                                {section.section}
+                            </p>
 
 
-                        <div className="space-y-1">
+                            <div className="space-y-1">
 
-                            {visibleItems.map((item) => {
+                                {visibleItems.map((item) => {
 
-                                const Icon = item.icon;
+                                    const Icon = item.icon;
 
-                                return (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        className={({ isActive }) => `
-                                            flex
-                                            items-center
-                                            gap-3
-                                            px-3
-                                            py-2.5
-                                            rounded-lg
-                                            text-sm
-                                            font-medium
-                                            transition
-                                            duration-200
+                                    return (
+                                        <NavLink
+                                            key={item.path}
+                                            to={item.path}
+                                            title={item.name}
+                                            className={({ isActive }) => `
+                                                flex
+                                                items-center
+                                                justify-center
+                                                md:justify-start
+                                                gap-3
+                                                px-2.5
+                                                md:px-3
+                                                py-2.5
+                                                rounded-xl
+                                                text-sm
+                                                font-medium
+                                                transition
+                                                duration-200
 
-                                            ${
-                                                isActive
-                                                    ? "bg-amber-500/10 text-orange-400"
-                                                    : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
-                                            }
-                                        `}
-                                    >
+                                                ${
+                                                    isActive
+                                                        ? "bg-amber-500/10 text-orange-400 font-semibold"
+                                                        : "text-zinc-400 hover:bg-zinc-900 hover:text-zinc-100"
+                                                }
+                                            `}
+                                        >
 
-                                        <Icon className="text-xl" />
+                                            <Icon className="text-xl shrink-0" />
 
-                                        <span>
-                                            {item.name}
-                                        </span>
+                                            <span className="hidden md:inline truncate">
+                                                {item.name}
+                                            </span>
 
-                                    </NavLink>
-                                );
-                            })}
+                                        </NavLink>
+                                    );
+                                })}
+
+                            </div>
 
                         </div>
-
-                    </div>
+                    );
 
                 })}
 
             </nav>
 
 
-            {/* User */}
+            {/* User Profile */}
             <div className="
-                p-4
+                p-2
+                md:p-4
                 border-t
                 border-zinc-800
             ">
@@ -213,10 +230,15 @@ function Sidebar() {
                 <div className="
                     flex
                     items-center
+                    justify-center
+                    md:justify-start
                     gap-3
-                    px-2
+                    px-1
+                    md:px-2
                     py-2
-                ">
+                "
+                title={user?.name || "User"}
+                >
 
                     <div className="
                         w-9
@@ -229,12 +251,13 @@ function Sidebar() {
                         justify-center
                         font-semibold
                         text-sm
+                        shrink-0
                     ">
                         {user?.name?.charAt(0).toUpperCase() || "U"}
                     </div>
 
 
-                    <div className="min-w-0">
+                    <div className="hidden md:block min-w-0">
 
                         <p className="
                             text-sm
