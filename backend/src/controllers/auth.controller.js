@@ -11,6 +11,7 @@ const cookieOptions = {
     httpOnly: true,
     secure: isProduction,
     sameSite: isProduction ? "none" : "strict",
+    path: "/",
 };
 
 
@@ -60,7 +61,15 @@ const loginUser = asyncHandler(async (req, res) => {
         .cookie("accessToken", accessToken, cookieOptions)
         .cookie("refreshToken", refreshToken, cookieOptions)
         .json(
-            new ApiResponse(200, {user: loggedInUser}, "Login successful")
+            new ApiResponse(
+                200, 
+                {
+                    user: loggedInUser,
+                    accessToken,
+                    refreshToken
+                }, 
+                "Login successful"
+            )
         );
 });
 
@@ -86,10 +95,13 @@ const logoutUser = asyncHandler(async (req, res) => {
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
     
-    const oldRefreshToken = req.cookies?.refreshToken;
+    const oldRefreshToken = 
+        req.body?.refreshToken || 
+        req.header("x-refresh-token") ||
+        req.cookies?.refreshToken;
 
     if(!oldRefreshToken){
-        throw new ApiError(401, "Unauthorized Request");
+        throw new ApiError(401, "Unauthorized Request - No refresh token provided");
     }
 
     let decodedToken;
@@ -106,11 +118,11 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     const user = await User.findById(decodedToken._id).select("-password");
 
     if(!user){
-        throw new ApiError(401, "Invalid refresh token");
+        throw new ApiError(401, "Invalid refresh token - User not found");
     }
 
     if(oldRefreshToken !== user.refreshToken){
-        throw new ApiError(401, "Invalid refresh token");
+        throw new ApiError(401, "Invalid refresh token - Token does not match active session");
     }
 
     const { accessToken, refreshToken } = await generateTokensForUser(user);

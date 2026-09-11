@@ -13,10 +13,17 @@ function Logout() {
         try {
             await logoutUser();
 
+            localStorage.removeItem("tableflow_access_token");
+            localStorage.removeItem("tableflow_refresh_token");
+
             dispatch(logout());
 
             navigate("/auth", { replace: true });
         } catch (error) {
+            localStorage.removeItem("tableflow_access_token");
+            localStorage.removeItem("tableflow_refresh_token");
+            dispatch(logout());
+            navigate("/auth", { replace: true });
             console.error("Logout failed:", error);
         }
     };
